@@ -161,7 +161,7 @@ Mock data lives with its feature, not in a shared file: `features/tracks/model/m
 - **Garage bar**: wraps (`flex-wrap`) on narrow screens instead of the desktop single row
 - **Leaderboards grid**: 1 column → 2 columns at `md:`
 - **Tracks grid**: 1 column → 2 columns at `sm:` → 3 columns at `lg:`
-- **Grid "divider" look**: reference mock's trick of a `background` color showing through a `gap`, reimplemented with our own tokens as a `gap-px bg-divider` container with `bg-background` cells
+- **Grid "divider" look**: each grid cell (`TrackCard`, `LeaderboardCard`) draws its own `border border-divider`, rather than a container `gap-px bg-divider` background showing through the gaps — the container-background approach paints a solid block over any cell left empty by an item count that doesn't evenly divide the column count (found via browser verification: 3 tracks at the 2-column tablet breakpoint), which per-card borders don't
 
 ## Assets & fonts
 
