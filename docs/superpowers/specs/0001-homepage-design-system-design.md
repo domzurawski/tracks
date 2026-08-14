@@ -67,8 +67,9 @@ src/
 
   layout/                          # persistent app-shell chrome — not a page, rendered by app/layout.tsx
     site-nav/
-      ui/site-nav.tsx                # brand, links, auth-state-aware actions, mobile hamburger
-                                      # (client component, local useState)
+      ui/site-nav.tsx                # brand, links, auth-state-aware actions, mobile hamburger —
+                                      # native <details>/<summary> + Tailwind's group-open: variant,
+                                      # no client-side JS needed
       index.ts
     site-footer/
       ui/site-footer.tsx
@@ -81,11 +82,14 @@ src/
     activity/        ui/activity-ticker.tsx                               model/types.ts   model/mock.ts   index.ts
 
   shared/
-    ui/button/, ui/tag/, ui/card/, ui/index.ts   # Button (primary/secondary/ghost/icon/block,
-                                                  # polymorphic — <a> when given href), Tag
-                                                  # (accent/neutral/outline), Card (+ Kicker/
-                                                  # Title/Body/Meta) — no CSS ported from the
-                                                  # reference styles.css, pure Tailwind utility JSX
+    ui/button/, ui/tag/, ui/index.ts   # Button (primary/secondary/ghost/icon/block,
+                                        # polymorphic — <a> when given href), Tag
+                                        # (accent/neutral/outline) — no CSS ported from the
+                                        # reference styles.css, pure Tailwind utility JSX.
+                                        # Card is deferred: nothing on the homepage actually
+                                        # needs a bg-surface elevated card (the leaderboards/
+                                        # tracks grids use bg-background cells in a divider-gap
+                                        # grid instead) — add Card when a real page needs it.
     lib/cn.ts                    # className-merge helper, if needed
     config/site.ts               # genuinely app-wide constants (nav links, brand name)
     session/mock-session.ts       # isLoggedIn mock flag — read by site-nav and home-view, replaces real auth later
