@@ -10,7 +10,7 @@ export function TracksSection() {
           {mockTracks.length} circuits
         </span>
       </div>
-      <div className="grid grid-cols-1 gap-px bg-divider sm:grid-cols-2 lg:grid-cols-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
         {mockTracks.map((track) => (
           <TrackCard key={track.name} track={track} />
         ))}
