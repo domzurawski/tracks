@@ -42,22 +42,64 @@ Deliberately dropped from the reference system:
 
 No dark values ship in this pass. The indirection (`:root` semantic vars → `@theme inline` alias) plus a strict rule that components only ever use semantic utility classes (`bg-background`, `text-foreground`, `bg-accent-500` — never raw hex or the neutral Tailwind palette) means a future dark theme is a `:root[data-theme="dark"]` override block with new values; no component changes required.
 
-## Component architecture
+## Application architecture — Feature-Sliced Design
 
-Pure Tailwind utility classes in JSX — no CSS classes ported from the reference `styles.css`. Reusable React primitives are still extracted so the visual language stays consistent and centrally editable:
+The project follows [Feature-Sliced Design](https://feature-sliced.design). Layers live under `src/`, alongside (not inside) the Next.js `app/` router, which stays a thin routing shell that composes from the top FSD layer:
 
-- `src/components/ui/Button.tsx` — variants `primary` / `secondary` / `ghost` / `icon` / `block`; polymorphic (renders `<a>` when given `href`, otherwise `<button>`)
-- `src/components/ui/Tag.tsx` — `accent` / `neutral` / `outline` variants
-- `src/components/ui/Card.tsx` — compound component with `Card.Kicker`, `Card.Title`, `Card.Body`, `Card.Meta`
-- `src/components/nav/SiteNav.tsx` — brand mark, links, auth-state-aware right side, hamburger/slide-out panel below `md:` (client component, local `useState` for open/close)
-- `src/components/home/` — `Hero`, `ActivityTicker`, `GarageBar` (rendered only when logged in), `LeaderboardsSection` + `LeaderboardCard`, `TracksSection` + `TrackCard`, `SiteFooter`
-- Icons: `lucide-react` — `MapPin`, `ArrowRight`, `Car`, `Ruler`, `Mountain`, `Menu`, `X`
+```
+src/
+  app/                          # Next.js App Router — routing only, no business logic
+    layout.tsx
+    page.tsx                    # renders <HomeView /> from src/views/home
+    globals.css
+
+  views/                        # FSD "pages" layer, named views/ to avoid clashing with
+    home/                       # Next's own app/page.tsx convention
+      ui/HomeView.tsx           # composes the widgets in order
+      index.ts
+
+  widgets/
+    site-nav/ui/SiteNav.tsx               # brand, links, auth-state-aware actions,
+                                           # mobile hamburger (client component, local useState)
+    hero/ui/Hero.tsx
+    activity-ticker/ui/ActivityTicker.tsx
+    garage-bar/ui/GarageBar.tsx           # rendered only when logged in
+    leaderboards-section/ui/LeaderboardsSection.tsx
+    tracks-section/ui/TracksSection.tsx
+    site-footer/ui/SiteFooter.tsx
+    # each widget slice also has its own index.ts public API
+
+  entities/
+    track/        ui/TrackCard.tsx        model/types.ts   model/mock.ts   index.ts
+    leaderboard/   ui/LeaderboardCard.tsx  model/types.ts   model/mock.ts   index.ts
+    garage/                                model/types.ts   model/mock.ts   index.ts
+    activity/                              model/types.ts   model/mock.ts   index.ts
+
+  features/                     # intentionally empty for now — no interaction on this page
+                                 # rises to a real business use-case yet (auth, garage
+                                 # management, leaderboard filtering are future candidates)
+
+  shared/
+    ui/button/, ui/tag/, ui/card/, ui/index.ts   # Button (primary/secondary/ghost/icon/block,
+                                                  # polymorphic — <a> when given href), Tag
+                                                  # (accent/neutral/outline), Card (+ Kicker/
+                                                  # Title/Body/Meta) — no CSS ported from the
+                                                  # reference styles.css, pure Tailwind utility JSX
+    lib/cn.ts                   # className-merge helper, if needed
+    config/site.ts              # genuinely app-wide constants (nav links, brand name)
+```
+
+Rules: every slice exposes its contents only through its `index.ts` public API — consumers never deep-import a slice's internals. Imports flow one direction only: `app → views → widgets → features → entities → shared`; nothing imports from a layer above it, and same-layer cross-slice imports are avoided. `shared` in particular must stay free of any domain knowledge (tracks, leaderboards, garages) — anything that knows about the product's nouns belongs in `entities` or above.
+
+Icons: `lucide-react` — `MapPin`, `ArrowRight`, `Car`, `Ruler`, `Mountain`, `Menu`, `X`, used directly inside the widget/entity components that need them.
+
+The existing `@/*` path alias (from the create-next-app scaffold) already resolves to `src/*` and needs no change to support this layout.
 
 ## Data
 
-`src/lib/mock-data.ts` exports typed mock data (`Leaderboard`, `Track`, `ActivityItem`, `Garage` interfaces) mirroring the shape used in the reference mock's script block: 4 leaderboard entries (with 1-3 podium rows each), 3 tracks (Nürburgring Nordschleife, Circuit de la Sarthe, Spa-Francorchamps), 3 activity feed lines, one garage summary. Keeping this in its own module means swapping in real data later is a matter of replacing this file's contents, not restructuring components.
+Mock data lives with its entity, not in a shared file: `entities/track/model/mock.ts`, `entities/leaderboard/model/mock.ts`, `entities/garage/model/mock.ts`, `entities/activity/model/mock.ts`, typed by each entity's `model/types.ts` (`Track`, `Leaderboard` + podium rows, `Garage`, `ActivityItem`) — mirroring the shapes used in the reference mock's script block: 4 leaderboard entries (1-3 podium rows each), 3 tracks (Nürburgring Nordschleife, Circuit de la Sarthe, Spa-Francorchamps), 3 activity feed lines, one garage summary. Swapping in real data later is a per-entity change (replace that slice's `model/mock.ts` usage with a real fetch), not a shared-file rewrite.
 
-`isLoggedIn` is a single `const` at the top of `src/app/page.tsx` (default `false`), gating the nav's auth affordances and whether `GarageBar` renders — matches the reference mock's own logged-in/out toggle, easy to flip for visual QA now and to wire to real auth later.
+`isLoggedIn` is a single `const` at the top of `src/views/home/ui/HomeView.tsx` (default `false`), gating the nav's auth affordances and whether `GarageBar` renders — matches the reference mock's own logged-in/out toggle, easy to flip for visual QA now and to wire to real auth later.
 
 ## Mobile responsiveness
 
