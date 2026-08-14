@@ -109,7 +109,7 @@ Every filename under `src/` is kebab-case — `site-nav.tsx`, `track-card.tsx`, 
 
 The project lints with ESLint (`eslint-config-next` for Next/React rules, flat config in `eslint.config.mjs`) plus `eslint-plugin-boundaries` for the cross-feature import ban, and Prettier for formatting (`eslint-config-prettier` disables any ESLint stylistic rules so the two don't fight). This is a plain revert of an earlier, since-abandoned attempt to use Biome as a combined linter/formatter — Biome has no plugin system and can't express "same layer, different slice → forbidden" import rules, which the boundaries enforcement needs. `pnpm lint` runs everything (Next rules + boundaries) in one pass; no separate script is needed.
 
-Element types are derived from folder patterns (`src/app/**` → `app`, `src/views/**` → `views`, `src/layout/**` → `layout`, `src/features/**` → `features`, `src/shared/**` → `shared`). Using `eslint-plugin-boundaries` v7's current syntax:
+Element types are derived from folder patterns (`src/app/**` → `app`, `src/views/**` → `views`, `src/layout/**` → `layout`, `src/features/*` → `features`, `src/shared/**` → `shared`). `features` uses a single-star pattern with a `capture` group — without it, the whole `features/` tree resolves to one element _instance_, and `eslint-plugin-boundaries` treats same-instance dependencies as "internal" and skips them by default (`checkInternals: false`), silently exempting exactly the tracks↔leaderboards imports this rule exists to block. `capture: ["slice"]` makes each feature folder (`tracks`, `leaderboards`, ...) its own instance, so a cross-slice import is no longer "internal" and gets evaluated against the policy below. (Found and fixed during implementation — verified with a deliberate cross-feature import that failed lint until this was corrected.) Using `eslint-plugin-boundaries` v7's current syntax:
 
 ```js
 settings: {
@@ -117,7 +117,7 @@ settings: {
     { type: "app", pattern: "src/app/**" },
     { type: "views", pattern: "src/views/**" },
     { type: "layout", pattern: "src/layout/**" },
-    { type: "features", pattern: "src/features/**" },
+    { type: "features", pattern: "src/features/*", capture: ["slice"] },
     { type: "shared", pattern: "src/shared/**" },
   ],
 },
