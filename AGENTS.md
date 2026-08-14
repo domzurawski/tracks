@@ -56,7 +56,7 @@ The app needs to be fast and well-optimized. In practice:
 
 ## SEO
 
-Every route defines proper metadata (title, description, OpenGraph) via Next's Metadata API — not just the homepage. Keep semantic HTML: correct heading hierarchy (one `h1` per page, no skipped levels) and landmark elements (`nav`, `main`, `footer`). Before considering a new page or feature done, audit it from an SEO perspective (metadata present, heading structure correct, links crawlable) — this is a standing, recurring check, not a one-time setup step.
+Every route defines proper metadata (title, description, OpenGraph) via Next's Metadata API — not just the homepage. Keep semantic HTML: correct heading hierarchy (one `h1` per page, no skipped levels) and landmark elements (`nav`, `main`, `footer`). Before considering a new page or feature done, audit it from an SEO perspective (metadata present, heading structure correct, links crawlable) — this is a standing, recurring check, not a one-time setup step. **Verify the audit against the actual rendered `<title>`, not just the source** — `title.template` set in a layout does NOT apply to a `title` defined in a `page.tsx` of that same route segment (only to pages in _nested_ segments below it); a root `page.tsx` sibling to `app/layout.tsx` must write its full final title string itself.
 
 ## 1. Think Before Coding
 
