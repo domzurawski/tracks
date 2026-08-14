@@ -44,31 +44,41 @@ No dark values ship in this pass. The indirection (`:root` semantic vars → `@t
 
 ## Application architecture — features-based
 
-Loosely inspired by [Feature-Sliced Design](https://feature-sliced.design)'s layering, simplified to four layers with no `entities` and no `widgets`: `app` (pure Next.js router) → `views` (everything the router renders, pages and layout content alike) → `features` (self-contained business capabilities) → `shared` (domain-agnostic primitives). `app` holds no component definitions of its own — `layout.tsx` and `page.tsx` only import and render from `views`.
+Loosely inspired by [Feature-Sliced Design](https://feature-sliced.design)'s layering, simplified to five layers with no `entities` and no `widgets`: `app` (pure Next.js router) → `views` (full page compositions only — what `app/`'s routing files render as a page) → `layout` (persistent app-shell chrome that isn't itself a page) → `features` (self-contained business capabilities) → `shared` (domain-agnostic primitives). `app` holds no component definitions of its own — `layout.tsx` and `page.tsx` only import and render from `views`/`layout`.
+
+`views` is reserved strictly for page-ready compositions — a view is something `app/page.tsx` (or a future route) renders wholesale. `SiteNav`/`SiteFooter` don't qualify: they're not a page, they're the persistent shell every page renders inside of, so they get their own `layout` layer rather than living in `views` or being folded into `shared` (which must stay free of any app-shell/auth-state awareness, not just domain knowledge).
+
+All filenames under `src/` are kebab-case (see File naming below) — including component files, where the exported component name inside stays PascalCase but the filename doesn't.
 
 ```
 src/
-  app/                          # pure router — routing files only, no component definitions
-    layout.tsx                  # html/body shell, fonts, metadata; renders <SiteNav/>, {children}, <SiteFooter/> from views
-    page.tsx                    # renders <HomeView /> from views
+  app/                             # pure router — routing files only, no component definitions
+    layout.tsx                     # html/body shell, fonts, metadata; renders <SiteNav/>, {children}, <SiteFooter/> from layout/
+    page.tsx                       # renders <HomeView /> from views/
     globals.css
 
-  views/                        # everything app/'s routing files render
-    site-nav/ui/SiteNav.tsx      # persistent chrome — brand, links, auth-state-aware actions,
-                                  # mobile hamburger (client component, local useState)
-    site-footer/ui/SiteFooter.tsx
+  views/                           # full page compositions only
     home/
       ui/
-        HomeView.tsx             # composes Hero + the feature sections below
-        Hero.tsx                 # page-specific, no reusable data — lives here, not as a feature
+        home-view.tsx               # composes Hero + the feature sections below
+        hero.tsx                    # page-specific, no reusable data — lives here, not as a feature
       index.ts
     # each view slice also has its own index.ts public API
 
+  layout/                          # persistent app-shell chrome — not a page, rendered by app/layout.tsx
+    site-nav/
+      ui/site-nav.tsx                # brand, links, auth-state-aware actions, mobile hamburger
+                                      # (client component, local useState)
+      index.ts
+    site-footer/
+      ui/site-footer.tsx
+      index.ts
+
   features/
-    tracks/         ui/TrackCard.tsx        ui/TracksSection.tsx        model/types.ts   model/mock.ts   index.ts
-    leaderboards/    ui/LeaderboardCard.tsx  ui/LeaderboardsSection.tsx  model/types.ts   model/mock.ts   index.ts
-    garage/          ui/GarageBar.tsx                                   model/types.ts   model/mock.ts   index.ts
-    activity/        ui/ActivityTicker.tsx                              model/types.ts   model/mock.ts   index.ts
+    tracks/         ui/track-card.tsx        ui/tracks-section.tsx        model/types.ts   model/mock.ts   index.ts
+    leaderboards/    ui/leaderboard-card.tsx  ui/leaderboards-section.tsx  model/types.ts   model/mock.ts   index.ts
+    garage/          ui/garage-bar.tsx                                    model/types.ts   model/mock.ts   index.ts
+    activity/        ui/activity-ticker.tsx                               model/types.ts   model/mock.ts   index.ts
 
   shared/
     ui/button/, ui/tag/, ui/card/, ui/index.ts   # Button (primary/secondary/ghost/icon/block,
@@ -76,28 +86,33 @@ src/
                                                   # (accent/neutral/outline), Card (+ Kicker/
                                                   # Title/Body/Meta) — no CSS ported from the
                                                   # reference styles.css, pure Tailwind utility JSX
-    lib/cn.ts                   # className-merge helper, if needed
-    config/site.ts              # genuinely app-wide constants (nav links, brand name)
-    session/mock-session.ts      # isLoggedIn mock flag — read by SiteNav and HomeView, replaces real auth later
+    lib/cn.ts                    # className-merge helper, if needed
+    config/site.ts               # genuinely app-wide constants (nav links, brand name)
+    session/mock-session.ts       # isLoggedIn mock flag — read by site-nav and home-view, replaces real auth later
 ```
 
-Rules: every slice exposes its contents only through its `index.ts` public API. Imports flow one direction only: `app → views → features → shared`. **Feature-to-feature imports are never allowed** — a feature may only import from `shared`. Checked against the mock data: `leaderboards` entries carry `trackName` as a plain string rather than a reference into the tracks list, so `features/leaderboards` never needs `features/tracks` — the ban costs nothing for this page as scoped. If a future page genuinely needs to share data between two features, that's a signal to revisit the architecture (e.g. promote the shared concept into `shared` or reintroduce an entities-style layer), not to bend the rule.
+Rules: every slice exposes its contents only through its `index.ts` public API. Imports flow one direction only: `app → views/layout → features → shared` (`views` and `layout` are siblings — neither imports the other). **Feature-to-feature imports are never allowed** — a feature may only import from `shared`. Checked against the mock data: `leaderboards` entries carry `trackName` as a plain string rather than a reference into the tracks list, so `features/leaderboards` never needs `features/tracks` — the ban costs nothing for this page as scoped. If a future page genuinely needs to share data between two features, that's a signal to revisit the architecture (e.g. promote the shared concept into `shared` or reintroduce an entities-style layer), not to bend the rule.
 
-Icons: `lucide-react` — `MapPin`, `ArrowRight`, `Car`, `Ruler`, `Mountain`, `Menu`, `X`, used directly inside the view/feature components that need them.
+Icons: `lucide-react` — `MapPin`, `ArrowRight`, `Car`, `Ruler`, `Mountain`, `Menu`, `X`, used directly inside the view/layout/feature components that need them.
 
 The existing `@/*` path alias (from the create-next-app scaffold) already resolves to `src/*` and needs no change to support this layout.
+
+## File naming
+
+Every filename under `src/` is kebab-case — `site-nav.tsx`, `track-card.tsx`, `mock-session.ts` — with no exceptions for component files. The component or function exported from the file still uses ordinary PascalCase/camelCase identifiers (`export function SiteNav()` lives in `site-nav.tsx`); only the filename convention changes. Enforced by `unicorn/filename-case` (from `eslint-plugin-unicorn`, pinned to `65.0.1` — the last release supporting ESLint 9, since `eslint-config-next`'s own dependencies cap at ESLint 9) scoped to `src/**/*.{ts,tsx}` in `eslint.config.mjs`, so a wrongly-cased file fails `pnpm lint` rather than relying on convention alone. Root-level convention files (`README.md`, `AGENTS.md`, Next's own `page.tsx`/`layout.tsx`/etc., which are already lowercase single words) are unaffected — the rule only scans `src/`.
 
 ## Architecture boundary enforcement
 
 The project lints with ESLint (`eslint-config-next` for Next/React rules, flat config in `eslint.config.mjs`) plus `eslint-plugin-boundaries` for the cross-feature import ban, and Prettier for formatting (`eslint-config-prettier` disables any ESLint stylistic rules so the two don't fight). This is a plain revert of an earlier, since-abandoned attempt to use Biome as a combined linter/formatter — Biome has no plugin system and can't express "same layer, different slice → forbidden" import rules, which the boundaries enforcement needs. `pnpm lint` runs everything (Next rules + boundaries) in one pass; no separate script is needed.
 
-Element types are derived from folder patterns (`src/app/**` → `app`, `src/views/**` → `views`, `src/features/**` → `features`, `src/shared/**` → `shared`). Using `eslint-plugin-boundaries` v7's current syntax:
+Element types are derived from folder patterns (`src/app/**` → `app`, `src/views/**` → `views`, `src/layout/**` → `layout`, `src/features/**` → `features`, `src/shared/**` → `shared`). Using `eslint-plugin-boundaries` v7's current syntax:
 
 ```js
 settings: {
   "boundaries/elements": [
     { type: "app", pattern: "src/app/**" },
     { type: "views", pattern: "src/views/**" },
+    { type: "layout", pattern: "src/layout/**" },
     { type: "features", pattern: "src/features/**" },
     { type: "shared", pattern: "src/shared/**" },
   ],
@@ -106,11 +121,15 @@ rules: {
   "boundaries/dependencies": ["error", {
     default: "disallow",
     policies: [
-      { from: { element: { type: "app" } }, allow: [{ to: { element: { type: "views" } } }] },
+      { from: { element: { type: "app" } }, allow: [
+        { to: { element: { type: "views" } } },
+        { to: { element: { type: "layout" } } },
+      ] },
       { from: { element: { type: "views" } }, allow: [
         { to: { element: { type: "features" } } },
         { to: { element: { type: "shared" } } },
       ] },
+      { from: { element: { type: "layout" } }, allow: [{ to: { element: { type: "shared" } } }] },
       // "features" is deliberately absent from its own allow-list —
       // this is what blocks feature-to-feature imports.
       { from: { element: { type: "features" } }, allow: [{ to: { element: { type: "shared" } } }] },
@@ -120,7 +139,7 @@ rules: {
 },
 ```
 
-Because `features` only allows importing `shared`, any `features/x` → `features/y` import is rejected without needing a special same-type exclusion — the simplification (no entities/widgets) is what makes this rule this simple. Already implemented and verified (`pnpm lint` passes clean) ahead of the rest of this spec, since it's a foundational tooling decision rather than homepage-specific work.
+Because `features` only allows importing `shared`, any `features/x` → `features/y` import is rejected without needing a special same-type exclusion — the simplification (no entities/widgets) is what makes this rule this simple. `layout` gets the same restriction as `features` (`shared` only) since it's app-shell chrome, not a page composition. Already implemented and verified (`pnpm lint` passes clean) ahead of the rest of this spec, since it's a foundational tooling decision rather than homepage-specific work.
 
 ## Data
 
