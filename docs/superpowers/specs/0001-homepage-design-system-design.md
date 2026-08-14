@@ -8,7 +8,7 @@ The goal is to establish this project's own Tailwind design system, informed by 
 
 ## Visual direction (informed by, not copied from, the reference package)
 
-Flat and architectural: Archivo everywhere, a near-mono red-on-white palette, strong 2px dividers between sections, zero border radius anywhere, content laid out in equal-width modular grid cells, labels flush-left (headings and button text are never centered), photography (the track diagrams) printed in grayscale. The one deliberate exception to "mostly ink on ground" is sparing accent use for the primary action and small emphasis.
+Flat and architectural: Archivo everywhere, a near-mono red-on-white palette, strong 2px dividers between sections, zero border radius anywhere, content laid out in equal-width modular grid cells, labels flush-left (headings and button text are never centered). The one deliberate exception to "mostly ink on ground" is sparing accent use for the primary action and small emphasis. The reference mock treats track photography in grayscale, but no images ship in this pass — see Assets & fonts.
 
 ## Tailwind v4 theme — brand new, authored fresh
 
@@ -89,27 +89,44 @@ The existing `@/*` path alias (from the create-next-app scaffold) already resolv
 
 ## Architecture boundary enforcement
 
-The project lints with Biome, which has no plugin system and can't express "same layer, different slice → forbidden" import rules. Enforcing the feature-isolation rule above needs `eslint-plugin-boundaries`, so a minimal ESLint config is added _scoped only to this rule_ — no stylistic/formatting rules enabled, since Biome continues to own formatting and general linting. Run as its own `pnpm lint:boundaries` script (and folded into `pnpm check`), not merged into Biome's output.
+The project lints with ESLint (`eslint-config-next` for Next/React rules, flat config in `eslint.config.mjs`) plus `eslint-plugin-boundaries` for the cross-feature import ban, and Prettier for formatting (`eslint-config-prettier` disables any ESLint stylistic rules so the two don't fight). This is a plain revert of an earlier, since-abandoned attempt to use Biome as a combined linter/formatter — Biome has no plugin system and can't express "same layer, different slice → forbidden" import rules, which the boundaries enforcement needs. `pnpm lint` runs everything (Next rules + boundaries) in one pass; no separate script is needed.
 
-Element types are derived from folder patterns (`src/app/**` → `app`, `src/views/*/**` → `views`, `src/features/*/**` → `features`, `src/shared/**` → `shared`), then:
+Element types are derived from folder patterns (`src/app/**` → `app`, `src/views/**` → `views`, `src/features/**` → `features`, `src/shared/**` → `shared`). Using `eslint-plugin-boundaries` v7's current syntax:
 
 ```js
-'boundaries/element-types': ['error', {
-  default: 'disallow',
-  rules: [
-    { from: 'app',      allow: ['views'] },
-    { from: 'views',    allow: ['features', 'shared'] },
-    { from: 'features', allow: ['shared'] },   // 'features' is deliberately absent from its own allow-list
-    { from: 'shared',   allow: [] },
+settings: {
+  "boundaries/elements": [
+    { type: "app", pattern: "src/app/**" },
+    { type: "views", pattern: "src/views/**" },
+    { type: "features", pattern: "src/features/**" },
+    { type: "shared", pattern: "src/shared/**" },
   ],
-}]
+},
+rules: {
+  "boundaries/dependencies": ["error", {
+    default: "disallow",
+    policies: [
+      { from: { element: { type: "app" } }, allow: [{ to: { element: { type: "views" } } }] },
+      { from: { element: { type: "views" } }, allow: [
+        { to: { element: { type: "features" } } },
+        { to: { element: { type: "shared" } } },
+      ] },
+      // "features" is deliberately absent from its own allow-list —
+      // this is what blocks feature-to-feature imports.
+      { from: { element: { type: "features" } }, allow: [{ to: { element: { type: "shared" } } }] },
+      { from: { element: { type: "shared" } }, allow: [] },
+    ],
+  }],
+},
 ```
 
-Because `features` only allows importing `shared`, any `features/x` → `features/y` import is rejected without needing a special same-type exclusion — the simplification (no entities/widgets) is what makes this rule this simple.
+Because `features` only allows importing `shared`, any `features/x` → `features/y` import is rejected without needing a special same-type exclusion — the simplification (no entities/widgets) is what makes this rule this simple. Already implemented and verified (`pnpm lint` passes clean) ahead of the rest of this spec, since it's a foundational tooling decision rather than homepage-specific work.
 
 ## Data
 
 Mock data lives with its feature, not in a shared file: `features/tracks/model/mock.ts`, `features/leaderboards/model/mock.ts`, `features/garage/model/mock.ts`, `features/activity/model/mock.ts`, typed by each feature's `model/types.ts` (`Track`, `Leaderboard` + podium rows, `Garage`, `ActivityItem`) — mirroring the shapes used in the reference mock's script block: 4 leaderboard entries (1-3 podium rows each), 3 tracks (Nürburgring Nordschleife, Circuit de la Sarthe, Spa-Francorchamps), 3 activity feed lines, one garage summary. Swapping in real data later is a per-feature change (replace that slice's `model/mock.ts` usage with a real fetch), not a shared-file rewrite.
+
+`Track` has no `imageUrl` field for now — see Assets & fonts for how `TrackCard` renders in its place.
 
 `isLoggedIn` lives as a single mock constant in `shared/session/mock-session.ts` (default `false`) — imported independently by `SiteNav` (gating auth affordances) and `HomeView` (gating whether `GarageBar` renders), since Next.js layouts can't pass props down into the page they wrap. Matches the reference mock's own logged-in/out toggle; easy to flip for visual QA now, and the whole file is deleted once real session handling exists.
 
@@ -125,14 +142,14 @@ Mock data lives with its feature, not in a shared file: `features/tracks/model/m
 
 ## Assets & fonts
 
-- Copy the three track SVGs (`nurburgring-nordschleife.svg`, `le-mans.svg`, `spa-francorchamps.svg`) from the reference package into `public/tracks/`
+- **No images ship in this pass.** The reference package's track SVGs are not copied into the codebase — `TrackCard`'s image slot renders a blank `bg-surface` placeholder box (matching the reference mock's `height:180px` container, minus the `<img>`) until real track imagery exists. This isn't a component that needs building later — it's the same `TrackCard`, just with the `<img>` swapped in once there's something to point it at.
 - Load Archivo via `next/font/google` (weights 400/600/800), replacing the current Geist fonts in `src/app/layout.tsx`
 - Remove the unused default create-next-app public assets (`next.svg`, `vercel.svg`, `window.svg`, `file.svg`, `globe.svg`) since the new homepage doesn't reference them
 - Light theme only — no dark-mode CSS shipped in this pass
 
 ## Verification
 
-- `pnpm dev` — visually check hero, activity ticker, leaderboards grid, tracks grid, footer, and nav (both `isLoggedIn` states via toggling the mock flag) at mobile, tablet, and desktop widths
+- `pnpm dev` — visually check hero, activity ticker, leaderboards grid, tracks grid (blank placeholder boxes where images will go), footer, and nav (both `isLoggedIn` states via toggling the mock flag) at mobile, tablet, and desktop widths
 - `pnpm build` — production build succeeds
-- `pnpm biome check .` — lints and formats clean
-- `pnpm lint:boundaries` — passes with zero feature-to-feature imports; introduce a deliberate violation once to confirm the rule actually catches it, then revert
+- `pnpm lint` — Next/React rules and the feature-isolation boundary rule pass clean; introduce a deliberate feature-to-feature import once to confirm the rule actually catches it, then revert
+- `pnpm format:check` — Prettier reports no changes needed
