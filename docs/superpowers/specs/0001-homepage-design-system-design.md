@@ -21,16 +21,16 @@ Flat and architectural: Archivo everywhere, a near-mono red-on-white palette, st
 
 ### Tokens
 
-| Token | Light value | Tailwind namespace | Notes |
-|---|---|---|---|
-| `--background` | `#f3f2f2` | `--color-background` | page ground |
-| `--foreground` | `#201e1d` | `--color-foreground` | body text |
-| `--surface` | `#eae9e9` | `--color-surface` | card/tag fills |
-| `--divider` | `color-mix(in srgb, var(--foreground) 40%, transparent)` | `--color-divider` | 2px rules between sections |
-| `--accent-100..900` | 9-step ramp, `#fff2ef` → `#4d170e` | `--color-accent-100..900` | single accent voice; base = 500, hover = 600, pressed = 700 |
-| `--neutral-100..900` | 9-step ramp, `#f8f4f4` → `#2d2b2b` | `--color-neutral-100..900` | neutral tags, muted text |
-| `--font-heading`, `--font-body` | Archivo (`next/font/google`, weights 400/600/800) | `--font-heading`, `--font-body` | same family, both roles |
-| `--shadow-sm/md/lg` | ink-tinted, e.g. `color-mix(in srgb, var(--foreground) 14%, transparent)` | `--shadow-sm/md/lg` | deliberate override of Tailwind's default shadow scale — used for card elevation |
+| Token                           | Light value                                                               | Tailwind namespace              | Notes                                                                            |
+| ------------------------------- | ------------------------------------------------------------------------- | ------------------------------- | -------------------------------------------------------------------------------- |
+| `--background`                  | `#f3f2f2`                                                                 | `--color-background`            | page ground                                                                      |
+| `--foreground`                  | `#201e1d`                                                                 | `--color-foreground`            | body text                                                                        |
+| `--surface`                     | `#eae9e9`                                                                 | `--color-surface`               | card/tag fills                                                                   |
+| `--divider`                     | `color-mix(in srgb, var(--foreground) 40%, transparent)`                  | `--color-divider`               | 2px rules between sections                                                       |
+| `--accent-100..900`             | 9-step ramp, `#fff2ef` → `#4d170e`                                        | `--color-accent-100..900`       | single accent voice; base = 500, hover = 600, pressed = 700                      |
+| `--neutral-100..900`            | 9-step ramp, `#f8f4f4` → `#2d2b2b`                                        | `--color-neutral-100..900`      | neutral tags, muted text                                                         |
+| `--font-heading`, `--font-body` | Archivo (`next/font/google`, weights 400/600/800)                         | `--font-heading`, `--font-body` | same family, both roles                                                          |
+| `--shadow-sm/md/lg`             | ink-tinted, e.g. `color-mix(in srgb, var(--foreground) 14%, transparent)` | `--shadow-sm/md/lg`             | deliberate override of Tailwind's default shadow scale — used for card elevation |
 
 Deliberately dropped from the reference system:
 
@@ -89,7 +89,7 @@ The existing `@/*` path alias (from the create-next-app scaffold) already resolv
 
 ## Architecture boundary enforcement
 
-The project lints with Biome, which has no plugin system and can't express "same layer, different slice → forbidden" import rules. Enforcing the feature-isolation rule above needs `eslint-plugin-boundaries`, so a minimal ESLint config is added *scoped only to this rule* — no stylistic/formatting rules enabled, since Biome continues to own formatting and general linting. Run as its own `pnpm lint:boundaries` script (and folded into `pnpm check`), not merged into Biome's output.
+The project lints with Biome, which has no plugin system and can't express "same layer, different slice → forbidden" import rules. Enforcing the feature-isolation rule above needs `eslint-plugin-boundaries`, so a minimal ESLint config is added _scoped only to this rule_ — no stylistic/formatting rules enabled, since Biome continues to own formatting and general linting. Run as its own `pnpm lint:boundaries` script (and folded into `pnpm check`), not merged into Biome's output.
 
 Element types are derived from folder patterns (`src/app/**` → `app`, `src/views/*/**` → `views`, `src/features/*/**` → `features`, `src/shared/**` → `shared`), then:
 
