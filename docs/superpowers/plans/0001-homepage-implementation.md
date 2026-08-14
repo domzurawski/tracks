@@ -313,7 +313,7 @@ git commit -m "feat: add shared Button and Tag primitives"
 
 **Interfaces:**
 
-- Consumes: `Tag` from `@/shared/ui` (Task 3); `lucide-react` icons (new dependency, this task).
+- Consumes: `Button`, `Tag` from `@/shared/ui` (Task 3); `lucide-react` icons (new dependency, this task).
 - Produces: `TracksSection` component (zero props, renders its own mock data) from `@/features/tracks`.
 
 - [ ] **Step 1: Add the `lucide-react` dependency**
@@ -457,7 +457,7 @@ git commit -m "feat: add tracks feature"
 
 **Interfaces:**
 
-- Consumes: `cn` from `@/shared/lib/cn` (Task 2).
+- Consumes: `Button` from `@/shared/ui` (Task 3); `cn` from `@/shared/lib/cn` (Task 2).
 - Produces: `LeaderboardsSection` component (zero props) from `@/features/leaderboards`.
 
 - [ ] **Step 1: Create `src/features/leaderboards/model/types.ts`**
@@ -645,6 +645,7 @@ git commit -m "feat: add leaderboards feature"
 
 **Interfaces:**
 
+- Consumes: `Button` from `@/shared/ui` (Task 3).
 - Produces: `GarageBar` component (zero props) from `@/features/garage`.
 
 - [ ] **Step 1: Create `src/features/garage/model/types.ts`**
