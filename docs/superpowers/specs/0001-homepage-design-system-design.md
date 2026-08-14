@@ -42,42 +42,33 @@ Deliberately dropped from the reference system:
 
 No dark values ship in this pass. The indirection (`:root` semantic vars → `@theme inline` alias) plus a strict rule that components only ever use semantic utility classes (`bg-background`, `text-foreground`, `bg-accent-500` — never raw hex or the neutral Tailwind palette) means a future dark theme is a `:root[data-theme="dark"]` override block with new values; no component changes required.
 
-## Application architecture — Feature-Sliced Design
+## Application architecture — features-based
 
-The project follows [Feature-Sliced Design](https://feature-sliced.design). Layers live under `src/`, alongside (not inside) the Next.js `app/` router, which stays a thin routing shell that composes from the top FSD layer:
+Loosely inspired by [Feature-Sliced Design](https://feature-sliced.design)'s layering, simplified to four layers with no `entities` and no `widgets`: `app` (pure Next.js router) → `views` (everything the router renders, pages and layout content alike) → `features` (self-contained business capabilities) → `shared` (domain-agnostic primitives). `app` holds no component definitions of its own — `layout.tsx` and `page.tsx` only import and render from `views`.
 
 ```
 src/
-  app/                          # Next.js App Router — routing only, no business logic
-    layout.tsx
-    page.tsx                    # renders <HomeView /> from src/views/home
+  app/                          # pure router — routing files only, no component definitions
+    layout.tsx                  # html/body shell, fonts, metadata; renders <SiteNav/>, {children}, <SiteFooter/> from views
+    page.tsx                    # renders <HomeView /> from views
     globals.css
 
-  views/                        # FSD "pages" layer, named views/ to avoid clashing with
-    home/                       # Next's own app/page.tsx convention
-      ui/HomeView.tsx           # composes the widgets in order
-      index.ts
-
-  widgets/
-    site-nav/ui/SiteNav.tsx               # brand, links, auth-state-aware actions,
-                                           # mobile hamburger (client component, local useState)
-    hero/ui/Hero.tsx
-    activity-ticker/ui/ActivityTicker.tsx
-    garage-bar/ui/GarageBar.tsx           # rendered only when logged in
-    leaderboards-section/ui/LeaderboardsSection.tsx
-    tracks-section/ui/TracksSection.tsx
+  views/                        # everything app/'s routing files render
+    site-nav/ui/SiteNav.tsx      # persistent chrome — brand, links, auth-state-aware actions,
+                                  # mobile hamburger (client component, local useState)
     site-footer/ui/SiteFooter.tsx
-    # each widget slice also has its own index.ts public API
+    home/
+      ui/
+        HomeView.tsx             # composes Hero + the feature sections below
+        Hero.tsx                 # page-specific, no reusable data — lives here, not as a feature
+      index.ts
+    # each view slice also has its own index.ts public API
 
-  entities/
-    track/        ui/TrackCard.tsx        model/types.ts   model/mock.ts   index.ts
-    leaderboard/   ui/LeaderboardCard.tsx  model/types.ts   model/mock.ts   index.ts
-    garage/                                model/types.ts   model/mock.ts   index.ts
-    activity/                              model/types.ts   model/mock.ts   index.ts
-
-  features/                     # intentionally empty for now — no interaction on this page
-                                 # rises to a real business use-case yet (auth, garage
-                                 # management, leaderboard filtering are future candidates)
+  features/
+    tracks/         ui/TrackCard.tsx        ui/TracksSection.tsx        model/types.ts   model/mock.ts   index.ts
+    leaderboards/    ui/LeaderboardCard.tsx  ui/LeaderboardsSection.tsx  model/types.ts   model/mock.ts   index.ts
+    garage/          ui/GarageBar.tsx                                   model/types.ts   model/mock.ts   index.ts
+    activity/        ui/ActivityTicker.tsx                              model/types.ts   model/mock.ts   index.ts
 
   shared/
     ui/button/, ui/tag/, ui/card/, ui/index.ts   # Button (primary/secondary/ghost/icon/block,
@@ -87,19 +78,40 @@ src/
                                                   # reference styles.css, pure Tailwind utility JSX
     lib/cn.ts                   # className-merge helper, if needed
     config/site.ts              # genuinely app-wide constants (nav links, brand name)
+    session/mock-session.ts      # isLoggedIn mock flag — read by SiteNav and HomeView, replaces real auth later
 ```
 
-Rules: every slice exposes its contents only through its `index.ts` public API — consumers never deep-import a slice's internals. Imports flow one direction only: `app → views → widgets → features → entities → shared`; nothing imports from a layer above it, and same-layer cross-slice imports are avoided. `shared` in particular must stay free of any domain knowledge (tracks, leaderboards, garages) — anything that knows about the product's nouns belongs in `entities` or above.
+Rules: every slice exposes its contents only through its `index.ts` public API. Imports flow one direction only: `app → views → features → shared`. **Feature-to-feature imports are never allowed** — a feature may only import from `shared`. Checked against the mock data: `leaderboards` entries carry `trackName` as a plain string rather than a reference into the tracks list, so `features/leaderboards` never needs `features/tracks` — the ban costs nothing for this page as scoped. If a future page genuinely needs to share data between two features, that's a signal to revisit the architecture (e.g. promote the shared concept into `shared` or reintroduce an entities-style layer), not to bend the rule.
 
-Icons: `lucide-react` — `MapPin`, `ArrowRight`, `Car`, `Ruler`, `Mountain`, `Menu`, `X`, used directly inside the widget/entity components that need them.
+Icons: `lucide-react` — `MapPin`, `ArrowRight`, `Car`, `Ruler`, `Mountain`, `Menu`, `X`, used directly inside the view/feature components that need them.
 
 The existing `@/*` path alias (from the create-next-app scaffold) already resolves to `src/*` and needs no change to support this layout.
 
+## Architecture boundary enforcement
+
+The project lints with Biome, which has no plugin system and can't express "same layer, different slice → forbidden" import rules. Enforcing the feature-isolation rule above needs `eslint-plugin-boundaries`, so a minimal ESLint config is added *scoped only to this rule* — no stylistic/formatting rules enabled, since Biome continues to own formatting and general linting. Run as its own `pnpm lint:boundaries` script (and folded into `pnpm check`), not merged into Biome's output.
+
+Element types are derived from folder patterns (`src/app/**` → `app`, `src/views/*/**` → `views`, `src/features/*/**` → `features`, `src/shared/**` → `shared`), then:
+
+```js
+'boundaries/element-types': ['error', {
+  default: 'disallow',
+  rules: [
+    { from: 'app',      allow: ['views'] },
+    { from: 'views',    allow: ['features', 'shared'] },
+    { from: 'features', allow: ['shared'] },   // 'features' is deliberately absent from its own allow-list
+    { from: 'shared',   allow: [] },
+  ],
+}]
+```
+
+Because `features` only allows importing `shared`, any `features/x` → `features/y` import is rejected without needing a special same-type exclusion — the simplification (no entities/widgets) is what makes this rule this simple.
+
 ## Data
 
-Mock data lives with its entity, not in a shared file: `entities/track/model/mock.ts`, `entities/leaderboard/model/mock.ts`, `entities/garage/model/mock.ts`, `entities/activity/model/mock.ts`, typed by each entity's `model/types.ts` (`Track`, `Leaderboard` + podium rows, `Garage`, `ActivityItem`) — mirroring the shapes used in the reference mock's script block: 4 leaderboard entries (1-3 podium rows each), 3 tracks (Nürburgring Nordschleife, Circuit de la Sarthe, Spa-Francorchamps), 3 activity feed lines, one garage summary. Swapping in real data later is a per-entity change (replace that slice's `model/mock.ts` usage with a real fetch), not a shared-file rewrite.
+Mock data lives with its feature, not in a shared file: `features/tracks/model/mock.ts`, `features/leaderboards/model/mock.ts`, `features/garage/model/mock.ts`, `features/activity/model/mock.ts`, typed by each feature's `model/types.ts` (`Track`, `Leaderboard` + podium rows, `Garage`, `ActivityItem`) — mirroring the shapes used in the reference mock's script block: 4 leaderboard entries (1-3 podium rows each), 3 tracks (Nürburgring Nordschleife, Circuit de la Sarthe, Spa-Francorchamps), 3 activity feed lines, one garage summary. Swapping in real data later is a per-feature change (replace that slice's `model/mock.ts` usage with a real fetch), not a shared-file rewrite.
 
-`isLoggedIn` is a single `const` at the top of `src/views/home/ui/HomeView.tsx` (default `false`), gating the nav's auth affordances and whether `GarageBar` renders — matches the reference mock's own logged-in/out toggle, easy to flip for visual QA now and to wire to real auth later.
+`isLoggedIn` lives as a single mock constant in `shared/session/mock-session.ts` (default `false`) — imported independently by `SiteNav` (gating auth affordances) and `HomeView` (gating whether `GarageBar` renders), since Next.js layouts can't pass props down into the page they wrap. Matches the reference mock's own logged-in/out toggle; easy to flip for visual QA now, and the whole file is deleted once real session handling exists.
 
 ## Mobile responsiveness
 
@@ -120,6 +132,7 @@ Mock data lives with its entity, not in a shared file: `entities/track/model/moc
 
 ## Verification
 
-- `pnpm dev` — visually check hero, activity ticker, leaderboards grid, tracks grid, footer, and nav (both `isLoggedIn` states via toggling the const) at mobile, tablet, and desktop widths
+- `pnpm dev` — visually check hero, activity ticker, leaderboards grid, tracks grid, footer, and nav (both `isLoggedIn` states via toggling the mock flag) at mobile, tablet, and desktop widths
 - `pnpm build` — production build succeeds
 - `pnpm biome check .` — lints and formats clean
+- `pnpm lint:boundaries` — passes with zero feature-to-feature imports; introduce a deliberate violation once to confirm the rule actually catches it, then revert
