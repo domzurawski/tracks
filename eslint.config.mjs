@@ -16,7 +16,7 @@ const eslintConfig = defineConfig([
         { type: "app", pattern: "src/app/**" },
         { type: "views", pattern: "src/views/**" },
         { type: "layout", pattern: "src/layout/**" },
-        { type: "features", pattern: "src/features/**" },
+        { type: "features", pattern: "src/features/*", capture: ["slice"] },
         { type: "shared", pattern: "src/shared/**" },
       ],
     },
