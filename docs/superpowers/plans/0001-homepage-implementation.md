@@ -1177,7 +1177,7 @@ Using the browser's dev tools on `http://localhost:3000`:
 
 - View page source / the Elements panel: exactly one `<h1>` (in Hero), followed by `<h2>`s (Leaderboards, Tracks section headings) and `<h3>`s (individual card titles) — no skipped levels.
 - Confirm `<header><nav>`, `<main>`, and `<footer>` landmark elements are all present exactly once.
-- Confirm `<title>` renders as "Log the lap. Own the record. · Tracks Inc." (page title + layout template) and a `<meta name="description">` and `og:title`/`og:description`/`og:type` tags are present in `<head>`.
+- Confirm `<title>` renders as "Log the lap. Own the record. · Tracks Inc." (written directly in `page.tsx` — Next's `title.template` doesn't apply between a layout and a page in the same route segment, so the homepage can't rely on the layout's template) and a `<meta name="description">` and `og:title`/`og:description`/`og:type` tags are present in `<head>`.
 - Confirm all nav links (`Leaderboards`, `Tracks`, `Log in`, `Sign up`) and CTA links (`Create free account`, `Browse leaderboards`, `See leaderboards`, `View full leaderboard`, `Manage garage`) render as real `<a href="...">` elements (via `Button`'s `href` branch or plain `<a>`), not `<button>`/`<span>` — crawlable.
 
 No commit for this task (verification only, and the temporary changes in Steps 1 and 3 must be reverted before finishing).
