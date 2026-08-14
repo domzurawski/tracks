@@ -1,26 +1,63 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #f3f2f2;
+  --foreground: #201e1d;
+  --surface: #eae9e9;
+  --divider: color-mix(in srgb, #201e1d 40%, transparent);
+
+  --accent-100: #fff2ef;
+  --accent-200: #ffe0d9;
+  --accent-300: #ffc4b8;
+  --accent-400: #ff9783;
+  --accent-500: #ff563c;
+  --accent-600: #dd2b0f;
+  --accent-700: #ae1800;
+  --accent-800: #7c1405;
+  --accent-900: #4d170e;
+
+  --neutral-100: #f8f4f4;
+  --neutral-200: #eae7e7;
+  --neutral-300: #d7d3d3;
+  --neutral-400: #bab6b6;
+  --neutral-500: #9b9797;
+  --neutral-600: #7d7979;
+  --neutral-700: #605d5d;
+  --neutral-800: #444141;
+  --neutral-900: #2d2b2b;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+  --color-surface: var(--surface);
+  --color-divider: var(--divider);
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
+  --color-accent-100: var(--accent-100);
+  --color-accent-200: var(--accent-200);
+  --color-accent-300: var(--accent-300);
+  --color-accent-400: var(--accent-400);
+  --color-accent-500: var(--accent-500);
+  --color-accent-600: var(--accent-600);
+  --color-accent-700: var(--accent-700);
+  --color-accent-800: var(--accent-800);
+  --color-accent-900: var(--accent-900);
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  --color-neutral-100: var(--neutral-100);
+  --color-neutral-200: var(--neutral-200);
+  --color-neutral-300: var(--neutral-300);
+  --color-neutral-400: var(--neutral-400);
+  --color-neutral-500: var(--neutral-500);
+  --color-neutral-600: var(--neutral-600);
+  --color-neutral-700: var(--neutral-700);
+  --color-neutral-800: var(--neutral-800);
+  --color-neutral-900: var(--neutral-900);
+
+  --font-heading: var(--font-archivo, system-ui, sans-serif);
+  --font-body: var(--font-archivo, system-ui, sans-serif);
+
+  --shadow-sm: 0 1px 2px color-mix(in srgb, var(--foreground) 14%, transparent);
+  --shadow-md: 0 3px 10px color-mix(in srgb, var(--foreground) 16%, transparent);
+  --shadow-lg: 0 12px 32px
+    color-mix(in srgb, var(--foreground) 22%, transparent);
 }
