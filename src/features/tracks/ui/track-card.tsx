@@ -4,7 +4,7 @@ import type { Track } from "../model/types";
 
 export function TrackCard({ track }: { track: Track }) {
   return (
-    <div className="flex flex-col gap-3.5 bg-background p-6">
+    <div className="flex flex-col gap-3.5 border border-divider bg-background p-6">
       <div className="flex h-[180px] items-center justify-center bg-neutral-200" />
       <div className="flex flex-col gap-1">
         <h3 className="font-heading text-lg font-extrabold">{track.name}</h3>
