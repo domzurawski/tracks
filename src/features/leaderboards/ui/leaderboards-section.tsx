@@ -12,7 +12,7 @@ export function LeaderboardsSection() {
           {mockLeaderboards.length} active
         </span>
       </div>
-      <div className="grid grid-cols-1 gap-px bg-divider md:grid-cols-2">
+      <div className="grid grid-cols-1 md:grid-cols-2">
         {mockLeaderboards.map((leaderboard) => (
           <LeaderboardCard
             key={`${leaderboard.title}-${leaderboard.trackName}`}
