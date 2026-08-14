@@ -2,6 +2,7 @@ import { defineConfig, globalIgnores } from "eslint/config";
 import nextVitals from "eslint-config-next/core-web-vitals";
 import nextTs from "eslint-config-next/typescript";
 import boundaries from "eslint-plugin-boundaries";
+import unicorn from "eslint-plugin-unicorn";
 import eslintConfigPrettier from "eslint-config-prettier";
 
 const eslintConfig = defineConfig([
@@ -14,6 +15,7 @@ const eslintConfig = defineConfig([
       "boundaries/elements": [
         { type: "app", pattern: "src/app/**" },
         { type: "views", pattern: "src/views/**" },
+        { type: "layout", pattern: "src/layout/**" },
         { type: "features", pattern: "src/features/**" },
         { type: "shared", pattern: "src/shared/**" },
       ],
@@ -26,7 +28,10 @@ const eslintConfig = defineConfig([
           policies: [
             {
               from: { element: { type: "app" } },
-              allow: [{ to: { element: { type: "views" } } }],
+              allow: [
+                { to: { element: { type: "views" } } },
+                { to: { element: { type: "layout" } } },
+              ],
             },
             {
               from: { element: { type: "views" } },
@@ -34,6 +39,10 @@ const eslintConfig = defineConfig([
                 { to: { element: { type: "features" } } },
                 { to: { element: { type: "shared" } } },
               ],
+            },
+            {
+              from: { element: { type: "layout" } },
+              allow: [{ to: { element: { type: "shared" } } }],
             },
             {
               // "features" is deliberately absent from its own allow-list —
@@ -48,6 +57,13 @@ const eslintConfig = defineConfig([
           ],
         },
       ],
+    },
+  },
+  {
+    files: ["src/**/*.{ts,tsx}"],
+    plugins: { unicorn },
+    rules: {
+      "unicorn/filename-case": ["error", { case: "kebabCase" }],
     },
   },
   eslintConfigPrettier,
