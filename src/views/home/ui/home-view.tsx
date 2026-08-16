@@ -1,16 +1,18 @@
 import { ActivityTicker } from "@/features/activity";
+import { getCurrentUser } from "@/features/auth";
 import { GarageBar } from "@/features/garage";
 import { LeaderboardsSection } from "@/features/leaderboards";
 import { TracksSection } from "@/features/tracks";
-import { isLoggedIn } from "@/shared/session/mock-session";
 import { Hero } from "./hero";
 
-export function HomeView() {
+export async function HomeView() {
+  const user = await getCurrentUser();
+
   return (
     <main className="mx-auto flex w-full max-w-6xl flex-col px-6 md:px-12">
       <Hero />
       <ActivityTicker />
-      {isLoggedIn && <GarageBar />}
+      {user && <GarageBar />}
       <LeaderboardsSection />
       <TracksSection />
     </main>

@@ -1,9 +1,11 @@
 import { Menu, X } from "lucide-react";
 import { Button } from "@/shared/ui";
 import { siteConfig } from "@/shared/config/site";
-import { isLoggedIn } from "@/shared/session/mock-session";
+import { getCurrentUser, logout } from "@/features/auth";
 
-export function SiteNav() {
+export async function SiteNav() {
+  const user = await getCurrentUser();
+
   return (
     <header className="relative border-b-2 border-divider">
       <nav className="flex items-center gap-8 px-6 py-4 md:px-12">
@@ -25,17 +27,16 @@ export function SiteNav() {
         </ul>
 
         <div className="ml-auto hidden items-center gap-2.5 md:flex">
-          {isLoggedIn ? (
+          {user ? (
             <>
-              <a href="/garage" className="text-sm font-semibold">
+              <a href="/my-garage" className="text-sm font-semibold">
                 My Garage
               </a>
-              <button
-                type="button"
-                className="text-sm font-semibold text-accent-500"
-              >
-                Log out
-              </button>
+              <form action={logout}>
+                <Button type="submit" variant="ghost" className="px-0">
+                  Log out
+                </Button>
+              </form>
             </>
           ) : (
             <>
@@ -68,17 +69,20 @@ export function SiteNav() {
                 {link.label}
               </a>
             ))}
-            {isLoggedIn ? (
+            {user ? (
               <>
-                <a href="/garage" className="text-sm font-semibold">
+                <a href="/my-garage" className="text-sm font-semibold">
                   My Garage
                 </a>
-                <button
-                  type="button"
-                  className="text-left text-sm font-semibold text-accent-500"
-                >
-                  Log out
-                </button>
+                <form action={logout}>
+                  <Button
+                    type="submit"
+                    variant="ghost"
+                    className="px-0 text-left"
+                  >
+                    Log out
+                  </Button>
+                </form>
               </>
             ) : (
               <div className="flex gap-2.5">
