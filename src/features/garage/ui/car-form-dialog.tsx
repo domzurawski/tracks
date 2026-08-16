@@ -65,7 +65,6 @@ export function CarFormDialog(props: CarFormDialogProps) {
 
     if (!result) {
       setIsOpen(false);
-      reset(defaultValues(props));
       return;
     }
 
@@ -88,7 +87,10 @@ export function CarFormDialog(props: CarFormDialogProps) {
       <Button
         type="button"
         variant={props.mode === "edit" ? "secondary" : "primary"}
-        onClick={() => setIsOpen(true)}
+        onClick={() => {
+          reset(defaultValues(props));
+          setIsOpen(true);
+        }}
       >
         {props.mode === "edit" ? (
           <>
