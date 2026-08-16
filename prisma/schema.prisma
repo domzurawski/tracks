@@ -12,6 +12,17 @@ enum Role {
   ADMIN
 }
 
+enum Drivetrain {
+  FWD
+  RWD
+  AWD
+}
+
+enum Transmission {
+  MANUAL
+  AUTOMATIC
+}
+
 model User {
   id           String    @id @default(cuid())
   email        String    @unique
@@ -20,6 +31,7 @@ model User {
   role         Role      @default(USER)
   createdAt    DateTime  @default(now())
   sessions     Session[]
+  cars         Car[]
 }
 
 model Session {
@@ -29,4 +41,20 @@ model Session {
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   expiresAt DateTime
   createdAt DateTime @default(now())
+}
+
+model Car {
+  id           String       @id @default(cuid())
+  make         String
+  model        String
+  year         Int
+  horsepower   Int
+  drivetrain   Drivetrain
+  transmission Transmission
+  nickname     String?
+  photoUrl     String?
+  notes        String?
+  ownerId      String
+  owner        User         @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  createdAt    DateTime     @default(now())
 }
