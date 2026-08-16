@@ -64,9 +64,7 @@ test("signup with a taken email shows a field error and creates nothing", async 
   expect(users).toHaveLength(1);
 });
 
-test("login with a wrong password shows a generic error", async ({
-  page,
-}) => {
+test("login with a wrong password shows a generic error", async ({ page }) => {
   await prisma.user.create({
     data: {
       name: "Real User",
