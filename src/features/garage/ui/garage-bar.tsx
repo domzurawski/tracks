@@ -13,8 +13,7 @@ export function GarageBar() {
           Your garage
         </span>
         <span className="text-sm font-semibold">
-          {mockGarage.cars} cars · PB {mockGarage.personalBest} at{" "}
-          {mockGarage.personalBestTrack} · Rank #{mockGarage.rank} overall
+          PB {mockGarage.personalBest} at {mockGarage.personalBestTrack} · Rank #{mockGarage.rank} overall
         </span>
       </div>
       <Button href="/garage" variant="ghost" className="ml-auto">
