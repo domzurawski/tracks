@@ -10,12 +10,10 @@ import { createSession, deleteSession } from "./session";
 
 const BCRYPT_COST = 12;
 
-type ActionResult =
-  | {
-      fieldErrors?: { email?: string; password?: string };
-      rootError?: string;
-    }
-  | void;
+type ActionResult = {
+  fieldErrors?: { email?: string; password?: string };
+  rootError?: string;
+} | void;
 
 export async function signup(input: SignupInput): Promise<ActionResult> {
   const parsed = signupSchema.safeParse(input);

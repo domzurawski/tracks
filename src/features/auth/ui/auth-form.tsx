@@ -44,12 +44,12 @@ export function AuthForm({ mode }: AuthFormProps) {
     if (!result) return;
 
     if (result.fieldErrors) {
-      (Object.keys(result.fieldErrors) as (keyof typeof result.fieldErrors)[]).forEach(
-        (field) => {
-          const message = result.fieldErrors?.[field];
-          if (message) setError(field, { message });
-        },
-      );
+      (
+        Object.keys(result.fieldErrors) as (keyof typeof result.fieldErrors)[]
+      ).forEach((field) => {
+        const message = result.fieldErrors?.[field];
+        if (message) setError(field, { message });
+      });
     }
 
     if (result.rootError) {
