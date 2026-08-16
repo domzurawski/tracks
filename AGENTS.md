@@ -30,7 +30,7 @@ Features-based, loosely inspired by [Feature-Sliced Design](https://feature-slic
 - **`views`** — full page compositions only: what `app/`'s routing files render as a page (e.g. `views/home`). Not for persistent chrome.
 - **`layout`** — persistent app-shell chrome that isn't itself a page (`site-nav`, `site-footer`), rendered by `app/layout.tsx`. A sibling of `views`, not inside it.
 - **`features`** — self-contained business capabilities (`tracks`, `leaderboards`, `garage`, `activity`, ...), each owning its own `ui/`, `model/types.ts`, `model/mock.ts`, `index.ts`.
-- **`shared`** — domain-agnostic primitives only (`ui/button`, `ui/tag`, `ui/card`, `lib/`, `config/`, `session/`). Zero business/domain knowledge, ever.
+- **`shared`** — domain-agnostic primitives only (`ui/button`, `ui/tag`, `ui/card`, `lib/`, `config/`). Zero business/domain knowledge, ever.
 
 Rules:
 

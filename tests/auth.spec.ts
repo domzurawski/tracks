@@ -81,6 +81,41 @@ test("login with a wrong password shows a generic error", async ({ page }) => {
   await expect(page.getByText("Invalid email or password")).toBeVisible();
 });
 
+test("login with an unknown email shows the same generic error", async ({
+  page,
+}) => {
+  await page.goto("/login");
+  await page.getByLabel("Email").fill("nobody@example.com");
+  await page.getByLabel("Password").fill("wrong-password");
+  await page.getByRole("button", { name: "Log in" }).click();
+
+  await expect(page.getByText("Invalid email or password")).toBeVisible();
+});
+
+test("login with the correct password creates a session and redirects to the homepage", async ({
+  page,
+}) => {
+  const user = await prisma.user.create({
+    data: {
+      name: "Real User",
+      email: "real@example.com",
+      passwordHash: await bcrypt.hash("correct-password", 12),
+    },
+  });
+
+  await page.goto("/login");
+  await page.getByLabel("Email").fill("real@example.com");
+  await page.getByLabel("Password").fill("correct-password");
+  await page.getByRole("button", { name: "Log in" }).click();
+
+  await expect(page).toHaveURL("/");
+
+  const sessionCount = await prisma.session.count({
+    where: { userId: user.id },
+  });
+  expect(sessionCount).toBe(1);
+});
+
 test("/my-garage redirects to /login when logged out, and renders when logged in", async ({
   page,
 }) => {
