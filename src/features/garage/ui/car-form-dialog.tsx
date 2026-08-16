@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useId, useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, type Resolver } from "react-hook-form";
 import { Pencil, Plus } from "lucide-react";
@@ -44,6 +44,7 @@ function defaultValues(props: CarFormDialogProps): CarInput {
 }
 
 export function CarFormDialog(props: CarFormDialogProps) {
+  const uid = useId();
   const [isOpen, setIsOpen] = useState(false);
   const {
     register,
@@ -113,21 +114,25 @@ export function CarFormDialog(props: CarFormDialogProps) {
           </h2>
 
           <div className="flex flex-col gap-1.5">
-            <label htmlFor="make" className="text-sm font-semibold">
+            <label htmlFor={`${uid}-make`} className="text-sm font-semibold">
               Make
             </label>
-            <input id="make" className={inputClasses} {...register("make")} />
+            <input
+              id={`${uid}-make`}
+              className={inputClasses}
+              {...register("make")}
+            />
             {errors.make && (
               <p className="text-sm text-accent-600">{errors.make.message}</p>
             )}
           </div>
 
           <div className="flex flex-col gap-1.5">
-            <label htmlFor="model" className="text-sm font-semibold">
+            <label htmlFor={`${uid}-model`} className="text-sm font-semibold">
               Model
             </label>
             <input
-              id="model"
+              id={`${uid}-model`}
               className={inputClasses}
               {...register("model")}
             />
@@ -139,11 +144,11 @@ export function CarFormDialog(props: CarFormDialogProps) {
           </div>
 
           <div className="flex flex-col gap-1.5">
-            <label htmlFor="year" className="text-sm font-semibold">
+            <label htmlFor={`${uid}-year`} className="text-sm font-semibold">
               Year
             </label>
             <input
-              id="year"
+              id={`${uid}-year`}
               type="number"
               className={inputClasses}
               {...register("year", { valueAsNumber: true })}
@@ -154,11 +159,14 @@ export function CarFormDialog(props: CarFormDialogProps) {
           </div>
 
           <div className="flex flex-col gap-1.5">
-            <label htmlFor="horsepower" className="text-sm font-semibold">
+            <label
+              htmlFor={`${uid}-horsepower`}
+              className="text-sm font-semibold"
+            >
               Horsepower
             </label>
             <input
-              id="horsepower"
+              id={`${uid}-horsepower`}
               type="number"
               className={inputClasses}
               {...register("horsepower", { valueAsNumber: true })}
@@ -171,11 +179,14 @@ export function CarFormDialog(props: CarFormDialogProps) {
           </div>
 
           <div className="flex flex-col gap-1.5">
-            <label htmlFor="drivetrain" className="text-sm font-semibold">
+            <label
+              htmlFor={`${uid}-drivetrain`}
+              className="text-sm font-semibold"
+            >
               Drivetrain
             </label>
             <select
-              id="drivetrain"
+              id={`${uid}-drivetrain`}
               className={inputClasses}
               {...register("drivetrain")}
             >
@@ -186,11 +197,14 @@ export function CarFormDialog(props: CarFormDialogProps) {
           </div>
 
           <div className="flex flex-col gap-1.5">
-            <label htmlFor="transmission" className="text-sm font-semibold">
+            <label
+              htmlFor={`${uid}-transmission`}
+              className="text-sm font-semibold"
+            >
               Transmission
             </label>
             <select
-              id="transmission"
+              id={`${uid}-transmission`}
               className={inputClasses}
               {...register("transmission")}
             >
@@ -200,22 +214,28 @@ export function CarFormDialog(props: CarFormDialogProps) {
           </div>
 
           <div className="flex flex-col gap-1.5">
-            <label htmlFor="nickname" className="text-sm font-semibold">
+            <label
+              htmlFor={`${uid}-nickname`}
+              className="text-sm font-semibold"
+            >
               Nickname (optional)
             </label>
             <input
-              id="nickname"
+              id={`${uid}-nickname`}
               className={inputClasses}
               {...register("nickname")}
             />
           </div>
 
           <div className="flex flex-col gap-1.5">
-            <label htmlFor="photoUrl" className="text-sm font-semibold">
+            <label
+              htmlFor={`${uid}-photoUrl`}
+              className="text-sm font-semibold"
+            >
               Photo URL (optional)
             </label>
             <input
-              id="photoUrl"
+              id={`${uid}-photoUrl`}
               className={inputClasses}
               {...register("photoUrl")}
             />
@@ -227,11 +247,11 @@ export function CarFormDialog(props: CarFormDialogProps) {
           </div>
 
           <div className="flex flex-col gap-1.5">
-            <label htmlFor="notes" className="text-sm font-semibold">
+            <label htmlFor={`${uid}-notes`} className="text-sm font-semibold">
               Notes (optional)
             </label>
             <textarea
-              id="notes"
+              id={`${uid}-notes`}
               className={inputClasses}
               rows={3}
               {...register("notes")}
