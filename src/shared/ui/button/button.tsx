@@ -10,6 +10,7 @@ type ButtonProps = {
   type?: "button" | "submit";
   disabled?: boolean;
   className?: string;
+  onClick?: () => void;
   children: ReactNode;
 };
 
@@ -30,6 +31,7 @@ export function Button({
   type = "button",
   disabled,
   className,
+  onClick,
   children,
 }: ButtonProps) {
   const classes = cn(baseClasses, variantClasses[variant], className);
@@ -43,7 +45,12 @@ export function Button({
   }
 
   return (
-    <button type={type} disabled={disabled} className={classes}>
+    <button
+      type={type}
+      disabled={disabled}
+      className={classes}
+      onClick={onClick}
+    >
       {children}
     </button>
   );
