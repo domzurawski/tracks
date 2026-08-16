@@ -12,7 +12,7 @@ export async function HomeView() {
     <main className="mx-auto flex w-full max-w-6xl flex-col px-6 md:px-12">
       <Hero />
       <ActivityTicker />
-      {user && <GarageBar />}
+      {user && <GarageBar userId={user.id} />}
       <LeaderboardsSection />
       <TracksSection />
     </main>
