@@ -7,12 +7,14 @@ export type ButtonVariant = "primary" | "secondary" | "ghost";
 type ButtonProps = {
   variant?: ButtonVariant;
   href?: string;
+  type?: "button" | "submit";
+  disabled?: boolean;
   className?: string;
   children: ReactNode;
 };
 
 const baseClasses =
-  "inline-flex items-center gap-1.5 whitespace-nowrap py-2 font-heading text-sm font-extrabold outline-none transition-colors focus-visible:outline-2 focus-visible:outline-accent-500 focus-visible:outline-offset-2";
+  "inline-flex items-center gap-1.5 whitespace-nowrap py-2 font-heading text-sm font-extrabold outline-none transition-colors focus-visible:outline-2 focus-visible:outline-accent-500 focus-visible:outline-offset-2 disabled:cursor-not-allowed disabled:opacity-60";
 
 const variantClasses: Record<ButtonVariant, string> = {
   primary:
@@ -25,6 +27,8 @@ const variantClasses: Record<ButtonVariant, string> = {
 export function Button({
   variant = "primary",
   href,
+  type = "button",
+  disabled,
   className,
   children,
 }: ButtonProps) {
@@ -39,7 +43,7 @@ export function Button({
   }
 
   return (
-    <button type="button" className={classes}>
+    <button type={type} disabled={disabled} className={classes}>
       {children}
     </button>
   );
