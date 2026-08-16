@@ -1,4 +1,5 @@
 import { expect, test, type Locator, type Page } from "@playwright/test";
+import bcrypt from "bcryptjs";
 import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient({
@@ -123,4 +124,63 @@ test("submitting the add form without required fields shows a field error and cr
 
   const carCount = await prisma.car.count();
   expect(carCount).toBe(0);
+});
+
+test("a user cannot see another user's car in their garage or homepage count", async ({
+  page,
+}) => {
+  const ownerA = await prisma.user.create({
+    data: {
+      name: "Owner A",
+      email: "ownerA@example.com",
+      passwordHash: await bcrypt.hash("password123", 12),
+    },
+  });
+  await prisma.car.create({
+    data: {
+      make: "Toyota",
+      model: "Supra",
+      year: 2023,
+      horsepower: 382,
+      drivetrain: "RWD",
+      transmission: "AUTOMATIC",
+      ownerId: ownerA.id,
+    },
+  });
+
+  await signUp(page, "ownerB@example.com");
+  await page.goto("/my-garage");
+
+  await expect(
+    page.getByText("No cars yet — add your first one."),
+  ).toBeVisible();
+  await expect(
+    page.getByText("2023 Toyota Supra", { exact: true }),
+  ).toHaveCount(0);
+
+  await page.goto("/");
+  await expect(page.getByText(/0 cars/)).toBeVisible();
+});
+
+test("a car with a photo URL renders an image instead of the fallback icon", async ({
+  page,
+}) => {
+  await signUp(page, "owner6@example.com");
+  await page.goto("/my-garage");
+
+  await page.getByRole("button", { name: "Add car" }).click();
+  const dialog = page.getByRole("dialog");
+  await dialog.getByLabel("Make").fill("Toyota");
+  await dialog.getByLabel("Model").fill("Supra");
+  await dialog.getByLabel("Year").fill("2023");
+  await dialog.getByLabel("Horsepower").fill("382");
+  await dialog
+    .getByLabel("Photo URL")
+    .fill("https://example.com/cars/supra.jpg");
+  await dialog.getByRole("button", { name: "Add car" }).click();
+
+  await expect(
+    page.getByText("2023 Toyota Supra", { exact: true }),
+  ).toBeVisible();
+  await expect(page.locator("img").first()).toBeVisible();
 });
