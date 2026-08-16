@@ -10,6 +10,11 @@ import { createSession, deleteSession } from "./session";
 
 const BCRYPT_COST = 12;
 
+const DUMMY_PASSWORD_HASH = await bcrypt.hash(
+  "dummy-password-for-timing-safety",
+  BCRYPT_COST,
+);
+
 type ActionResult = {
   fieldErrors?: { email?: string; password?: string };
   rootError?: string;
@@ -58,9 +63,10 @@ export async function login(input: LoginInput): Promise<ActionResult> {
   const user = await prisma.user.findUnique({
     where: { email: parsed.data.email },
   });
-  const passwordMatches = user
-    ? await bcrypt.compare(parsed.data.password, user.passwordHash)
-    : false;
+  const passwordMatches = await bcrypt.compare(
+    parsed.data.password,
+    user?.passwordHash ?? DUMMY_PASSWORD_HASH,
+  );
 
   if (!user || !passwordMatches) {
     return { rootError: "Invalid email or password" };
