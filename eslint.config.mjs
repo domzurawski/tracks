@@ -42,7 +42,10 @@ const eslintConfig = defineConfig([
             },
             {
               from: { element: { type: "layout" } },
-              allow: [{ to: { element: { type: "shared" } } }],
+              allow: [
+                { to: { element: { type: "features" } } },
+                { to: { element: { type: "shared" } } },
+              ],
             },
             {
               // "features" is deliberately absent from its own allow-list —
