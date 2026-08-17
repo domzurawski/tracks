@@ -1,12 +1,6 @@
-export type PodiumEntry = {
-  rank: string;
-  car: string;
-  time: string;
-  highlight: boolean;
-};
-
 export type Leaderboard = {
+  id: string;
   title: string;
+  trackId: string;
   trackName: string;
-  podium: PodiumEntry[];
 };
