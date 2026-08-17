@@ -14,7 +14,11 @@ export function LeaderboardCard({ leaderboard }: { leaderboard: Leaderboard }) {
           {leaderboard.title}
         </h3>
       </div>
-      <Button href="/leaderboards" variant="ghost" className="mt-1">
+      <Button
+        href={`/leaderboards/${leaderboard.id}`}
+        variant="ghost"
+        className="mt-1"
+      >
         View full leaderboard
         <ArrowRight className="h-3.5 w-3.5" />
       </Button>
