@@ -14,6 +14,7 @@ export type CarOption = {
   make: string;
   model: string;
   year: number;
+  nickname: string | null;
 };
 
 type SetTimeDialogProps = {
@@ -90,6 +91,10 @@ export function SetTimeDialog({ leaderboardId, cars }: SetTimeDialogProps) {
           className="flex w-80 flex-col gap-4"
         >
           <h2 className="font-heading text-lg font-extrabold">Set a time</h2>
+          <p className="text-sm text-foreground/60">
+            Your car&apos;s specs and notes will be shown publicly on this
+            leaderboard.
+          </p>
 
           <div className="flex flex-col gap-1.5">
             <label htmlFor={`${uid}-carId`} className="text-sm font-semibold">
@@ -102,7 +107,9 @@ export function SetTimeDialog({ leaderboardId, cars }: SetTimeDialogProps) {
             >
               {cars.map((car) => (
                 <option key={car.id} value={car.id}>
-                  {car.year} {car.make} {car.model}
+                  {car.nickname
+                    ? `${car.nickname} (${car.year} ${car.make} ${car.model})`
+                    : `${car.year} ${car.make} ${car.model}`}
                 </option>
               ))}
             </select>
