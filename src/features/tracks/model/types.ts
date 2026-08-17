@@ -4,5 +4,5 @@ export type Track = {
   country: string;
   length: number;
   corners: number;
-  elevation: number;
+  elevation: number | null;
 };

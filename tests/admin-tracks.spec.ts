@@ -39,7 +39,7 @@ async function addTrack(dialog: Locator) {
   await dialog.getByLabel("Country").fill("Germany");
   await dialog.getByLabel("Length (meters)").fill("20800");
   await dialog.getByLabel("Corners").fill("154");
-  await dialog.getByLabel("Elevation (meters)").fill("300");
+  await dialog.getByLabel("Elevation (meters, optional)").fill("300");
   await dialog.getByRole("button", { name: "Add track" }).click();
 }
 
@@ -70,6 +70,28 @@ test("an admin adding a track shows it in the admin list and the public tracks p
 
   await page.goto("/tracks");
   await expect(page.getByText("Nürburgring Nordschleife")).toBeVisible();
+});
+
+test("an admin can add a track without elevation", async ({ page }) => {
+  const admin = await createAdmin("admin1b@example.com");
+  await login(page, admin.email);
+  await page.goto("/admin/tracks");
+
+  await page.getByRole("button", { name: "Add track" }).click();
+  const dialog = page.getByRole("dialog");
+  await dialog.getByLabel("Name").fill("Spa-Francorchamps");
+  await dialog.getByLabel("Country").fill("Belgium");
+  await dialog.getByLabel("Length (meters)").fill("7000");
+  await dialog.getByLabel("Corners").fill("20");
+  await dialog.getByRole("button", { name: "Add track" }).click();
+
+  await expect(page.getByText("Spa-Francorchamps")).toBeVisible();
+  await expect(page.getByText(/elevation/)).toHaveCount(0);
+
+  const track = await prisma.track.findUnique({
+    where: { name: "Spa-Francorchamps" },
+  });
+  expect(track?.elevation).toBeNull();
 });
 
 test("an admin editing a track updates the list", async ({ page }) => {
@@ -135,6 +157,25 @@ test("submitting the add track form without required fields shows a field error 
 
   const trackCount = await prisma.track.count();
   expect(trackCount).toBe(0);
+});
+
+test("clearing a required numeric field shows a friendly error, not a raw Zod message", async ({
+  page,
+}) => {
+  const admin = await createAdmin("admin4b@example.com");
+  await login(page, admin.email);
+  await page.goto("/admin/tracks");
+
+  await page.getByRole("button", { name: "Add track" }).click();
+  const dialog = page.getByRole("dialog");
+  await dialog.getByLabel("Name").fill("Test Track");
+  await dialog.getByLabel("Country").fill("Testland");
+  await dialog.getByLabel("Length (meters)").fill("");
+  await dialog.getByLabel("Corners").fill("154");
+  await dialog.getByRole("button", { name: "Add track" }).click();
+
+  await expect(page.getByText("Enter a valid length")).toBeVisible();
+  await expect(page.getByText(/received NaN/)).toHaveCount(0);
 });
 
 test("a regular user cannot reach the admin tracks page", async ({ page }) => {

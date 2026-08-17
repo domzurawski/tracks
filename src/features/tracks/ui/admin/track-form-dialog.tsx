@@ -22,11 +22,11 @@ function defaultValues(props: TrackFormDialogProps): TrackInput {
       country: props.track.country,
       length: props.track.length,
       corners: props.track.corners,
-      elevation: props.track.elevation,
+      elevation: props.track.elevation ?? "",
     };
   }
 
-  return { name: "", country: "", length: 0, corners: 0, elevation: 0 };
+  return { name: "", country: "", length: 0, corners: 0, elevation: "" };
 }
 
 export function TrackFormDialog(props: TrackFormDialogProps) {
@@ -168,13 +168,13 @@ export function TrackFormDialog(props: TrackFormDialogProps) {
               htmlFor={`${uid}-elevation`}
               className="text-sm font-semibold"
             >
-              Elevation (meters)
+              Elevation (meters, optional)
             </label>
             <input
               id={`${uid}-elevation`}
               type="number"
               className={inputClasses}
-              {...register("elevation", { valueAsNumber: true })}
+              {...register("elevation")}
             />
             {errors.elevation && (
               <p className="text-sm text-accent-600">
