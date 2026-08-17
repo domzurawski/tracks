@@ -32,6 +32,11 @@ export async function SiteNav() {
               <a href="/my-garage" className="text-sm font-semibold">
                 My Garage
               </a>
+              {user.role === "ADMIN" && (
+                <a href="/admin" className="text-sm font-semibold">
+                  Admin
+                </a>
+              )}
               <form action={logout}>
                 <Button type="submit" variant="ghost" className="px-0">
                   Log out
@@ -74,6 +79,11 @@ export async function SiteNav() {
                 <a href="/my-garage" className="text-sm font-semibold">
                   My Garage
                 </a>
+                {user.role === "ADMIN" && (
+                  <a href="/admin" className="text-sm font-semibold">
+                    Admin
+                  </a>
+                )}
                 <form action={logout}>
                   <Button
                     type="submit"
