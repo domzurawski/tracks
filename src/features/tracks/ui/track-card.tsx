@@ -25,10 +25,12 @@ export function TrackCard({ track }: { track: Track }) {
           <Ruler className="h-3 w-3" />
           {track.corners} corners
         </Tag>
-        <Tag>
-          <Mountain className="h-3 w-3" />
-          {formatElevation(track.elevation)} elevation
-        </Tag>
+        {track.elevation !== null && (
+          <Tag>
+            <Mountain className="h-3 w-3" />
+            {formatElevation(track.elevation)} elevation
+          </Tag>
+        )}
       </div>
       <Button href="/leaderboards" variant="ghost" className="mt-0.5">
         See leaderboards

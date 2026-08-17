@@ -23,6 +23,16 @@ function revalidateLeaderboardPaths() {
   revalidatePath("/admin/leaderboards");
 }
 
+function toTrackData(input: TrackInput) {
+  return {
+    name: input.name,
+    country: input.country,
+    length: input.length,
+    corners: input.corners,
+    elevation: input.elevation === "" ? null : input.elevation,
+  };
+}
+
 export async function createTrack(
   input: TrackInput,
 ): Promise<TrackActionResult> {
@@ -37,7 +47,7 @@ export async function createTrack(
   }
 
   try {
-    await prisma.track.create({ data: parsed.data });
+    await prisma.track.create({ data: toTrackData(parsed.data) });
   } catch (error) {
     if (
       error instanceof Prisma.PrismaClientKnownRequestError &&
@@ -68,7 +78,10 @@ export async function updateTrack(
   }
 
   try {
-    await prisma.track.update({ where: { id }, data: parsed.data });
+    await prisma.track.update({
+      where: { id },
+      data: toTrackData(parsed.data),
+    });
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError) {
       if (error.code === "P2002") {

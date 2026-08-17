@@ -14,7 +14,9 @@ export function TrackAdminRow({ track }: { track: Track }) {
         <div className="flex flex-wrap gap-2">
           <Tag variant="neutral">{(track.length / 1000).toFixed(1)} km</Tag>
           <Tag variant="neutral">{track.corners} corners</Tag>
-          <Tag variant="neutral">{track.elevation}m elevation</Tag>
+          {track.elevation !== null && (
+            <Tag variant="neutral">{track.elevation}m elevation</Tag>
+          )}
         </div>
       </div>
       <div className="flex gap-2.5">

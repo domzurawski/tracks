@@ -65,7 +65,7 @@ model Track {
   country      String
   length       Int
   corners      Int
-  elevation    Int
+  elevation    Int?
   createdAt    DateTime      @default(now())
   leaderboards Leaderboard[]
 }
