@@ -15,3 +15,21 @@ export async function getLeaderboards(): Promise<Leaderboard[]> {
     trackName: leaderboard.track.name,
   }));
 }
+
+export async function getLeaderboard(
+  id: string,
+): Promise<Leaderboard | null> {
+  const leaderboard = await prisma.leaderboard.findUnique({
+    where: { id },
+    include: { track: { select: { name: true } } },
+  });
+
+  if (!leaderboard) return null;
+
+  return {
+    id: leaderboard.id,
+    title: leaderboard.title,
+    trackId: leaderboard.trackId,
+    trackName: leaderboard.track.name,
+  };
+}
