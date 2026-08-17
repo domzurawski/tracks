@@ -1,7 +1,8 @@
 export type Track = {
+  id: string;
   name: string;
   country: string;
-  length: string;
+  length: number;
   corners: number;
-  elevation: string;
+  elevation: number;
 };
