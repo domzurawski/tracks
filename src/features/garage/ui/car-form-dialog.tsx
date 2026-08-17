@@ -139,9 +139,7 @@ export function CarFormDialog(props: CarFormDialogProps) {
               {...register("model")}
             />
             {errors.model && (
-              <p className="text-sm text-accent-600">
-                {errors.model.message}
-              </p>
+              <p className="text-sm text-accent-600">{errors.model.message}</p>
             )}
           </div>
 

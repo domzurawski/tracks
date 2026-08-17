@@ -28,6 +28,7 @@
 ## File Structure
 
 **New:**
+
 - `shared/lib/session.ts` — adds `requireAdmin()` (modifies existing file, see Global Constraints).
 - `features/tracks/model/schema.ts` — `trackSchema` (Zod).
 - `features/tracks/model/tracks.ts` — `getTracks` (DAL).
@@ -52,6 +53,7 @@
 - `tests/admin-tracks.spec.ts`, `tests/admin-leaderboards.spec.ts` — Playwright E2E suites.
 
 **Modified:**
+
 - `prisma/schema.prisma` — add `Track`, `Leaderboard` models.
 - `features/tracks/model/types.ts` — `Track` gains `id`; `length`/`elevation` become `number`.
 - `features/tracks/ui/track-card.tsx` — format numeric `length`/`elevation` for display.
@@ -70,9 +72,11 @@
 ### Task 1: Prisma schema — `Track` and `Leaderboard` models
 
 **Files:**
+
 - Modify: `prisma/schema.prisma`
 
 **Interfaces:**
+
 - Produces: `Track` Prisma model (`id, name, country, length, corners, elevation, createdAt, leaderboards`); `Leaderboard` Prisma model (`id, title, trackId, track, createdAt`, `@@unique([trackId, title])`).
 
 - [ ] **Step 1: Add the models to `prisma/schema.prisma`**
@@ -110,10 +114,12 @@ Expected: `Your database is now in sync with your schema.` and a new folder unde
 - [ ] **Step 3: Apply the same migration to the test database**
 
 Run:
+
 ```bash
 set -a; source .env; set +a
 DATABASE_URL="$TEST_DATABASE_URL" npx prisma migrate deploy
 ```
+
 Expected: `All migrations have been successfully applied.`
 
 - [ ] **Step 4: Verify the Prisma client compiles against the new schema**
@@ -133,9 +139,11 @@ git commit -m "feat: add Track and Leaderboard models to schema"
 ### Task 2: `requireAdmin()` in `shared/lib/session.ts`
 
 **Files:**
+
 - Modify: `src/shared/lib/session.ts`
 
 **Interfaces:**
+
 - Consumes: `getCurrentUser(): Promise<AuthUser | null>` (already in this file).
 - Produces: `requireAdmin(): Promise<AuthUser>` — resolves to the current user if they're an admin; otherwise calls Next's `notFound()` (which throws), so callers can treat the return as always-non-null.
 
@@ -177,11 +185,13 @@ git commit -m "feat: add requireAdmin session guard"
 ### Task 3: Tracks domain layer — types, schema, DAL
 
 **Files:**
+
 - Modify: `src/features/tracks/model/types.ts`
 - Create: `src/features/tracks/model/schema.ts`
 - Create: `src/features/tracks/model/tracks.ts`
 
 **Interfaces:**
+
 - Produces: `Track` type (`{ id: string; name: string; country: string; length: number; corners: number; elevation: number }`); `trackSchema` (Zod) and `TrackInput` type; `getTracks(): Promise<Track[]>`.
 
 - [ ] **Step 1: Update `Track` type**
@@ -210,10 +220,7 @@ export const trackSchema = z.object({
   name: z.string().trim().min(1, "Name is required"),
   country: z.string().trim().min(1, "Country is required"),
   length: z.coerce.number().int().positive("Length must be greater than 0"),
-  corners: z.coerce
-    .number()
-    .int()
-    .positive("Corners must be greater than 0"),
+  corners: z.coerce.number().int().positive("Corners must be greater than 0"),
   elevation: z.coerce
     .number()
     .int()
@@ -254,9 +261,11 @@ git commit -m "feat: add tracks domain types, schema, and DAL"
 ### Task 4: Tracks server actions
 
 **Files:**
+
 - Create: `src/features/tracks/model/actions.ts`
 
 **Interfaces:**
+
 - Consumes: `trackSchema`, `TrackInput` (Task 3); `getCurrentUser` (`@/shared/lib/session`); `prisma` (`@/shared/lib/prisma`).
 - Produces: `createTrack(input: TrackInput): Promise<TrackActionResult>`, `updateTrack(id: string, input: TrackInput): Promise<TrackActionResult>`, `deleteTrack(id: string): Promise<{ rootError?: string } | void>`, where `TrackActionResult = { fieldErrors?: Partial<Record<keyof TrackInput, string>>; rootError?: string } | void`.
 
@@ -290,7 +299,9 @@ function revalidateLeaderboardPaths() {
   revalidatePath("/admin/leaderboards");
 }
 
-export async function createTrack(input: TrackInput): Promise<TrackActionResult> {
+export async function createTrack(
+  input: TrackInput,
+): Promise<TrackActionResult> {
   const parsed = trackSchema.safeParse(input);
   if (!parsed.success) {
     return { rootError: "Invalid input" };
@@ -394,12 +405,14 @@ git commit -m "feat: add track server actions"
 ### Task 5: Tracks admin UI
 
 **Files:**
+
 - Create: `src/features/tracks/ui/admin/track-form-dialog.tsx`
 - Create: `src/features/tracks/ui/admin/delete-track-button.tsx`
 - Create: `src/features/tracks/ui/admin/track-admin-row.tsx`
 - Create: `src/features/tracks/ui/admin/track-admin-list.tsx`
 
 **Interfaces:**
+
 - Consumes: `createTrack`, `updateTrack`, `deleteTrack` (Task 4); `trackSchema`, `TrackInput` (Task 3); `Track` (Task 3); `Button`, `Dialog` (`@/shared/ui`).
 - Produces: `TrackFormDialog(props: { mode: "create" } | { mode: "edit"; track: Track })`; `DeleteTrackButton(props: { trackId: string; trackName: string })`; `TrackAdminRow(props: { track: Track })`; `TrackAdminList(props: { tracks: Track[] })`.
 
@@ -420,9 +433,7 @@ import { trackSchema } from "../../model/schema";
 import type { TrackInput } from "../../model/schema";
 import type { Track } from "../../model/types";
 
-type TrackFormDialogProps =
-  | { mode: "create" }
-  | { mode: "edit"; track: Track };
+type TrackFormDialogProps = { mode: "create" } | { mode: "edit"; track: Track };
 
 const inputClasses =
   "border border-divider bg-background px-3 py-2 text-sm outline-none focus-visible:outline-2 focus-visible:outline-accent-500 focus-visible:outline-offset-2";
@@ -528,10 +539,7 @@ export function TrackFormDialog(props: TrackFormDialogProps) {
           </div>
 
           <div className="flex flex-col gap-1.5">
-            <label
-              htmlFor={`${uid}-country`}
-              className="text-sm font-semibold"
-            >
+            <label htmlFor={`${uid}-country`} className="text-sm font-semibold">
               Country
             </label>
             <input
@@ -547,10 +555,7 @@ export function TrackFormDialog(props: TrackFormDialogProps) {
           </div>
 
           <div className="flex flex-col gap-1.5">
-            <label
-              htmlFor={`${uid}-length`}
-              className="text-sm font-semibold"
-            >
+            <label htmlFor={`${uid}-length`} className="text-sm font-semibold">
               Length (meters)
             </label>
             <input
@@ -560,17 +565,12 @@ export function TrackFormDialog(props: TrackFormDialogProps) {
               {...register("length", { valueAsNumber: true })}
             />
             {errors.length && (
-              <p className="text-sm text-accent-600">
-                {errors.length.message}
-              </p>
+              <p className="text-sm text-accent-600">{errors.length.message}</p>
             )}
           </div>
 
           <div className="flex flex-col gap-1.5">
-            <label
-              htmlFor={`${uid}-corners`}
-              className="text-sm font-semibold"
-            >
+            <label htmlFor={`${uid}-corners`} className="text-sm font-semibold">
               Corners
             </label>
             <input
@@ -786,12 +786,14 @@ git commit -m "feat: add track admin UI"
 ### Task 6: Tracks public UI — DB-backed, drop mock
 
 **Files:**
+
 - Modify: `src/features/tracks/ui/track-card.tsx`
 - Modify: `src/features/tracks/ui/tracks-section.tsx`
 - Delete: `src/features/tracks/model/mock.ts`
 - Modify: `src/features/tracks/index.ts`
 
 **Interfaces:**
+
 - Consumes: `getTracks` (Task 3), `Track` (Task 3), `TrackFormDialog`/`TrackAdminList` (Task 5).
 - Produces: `TracksSection` (async Server Component, no props) — public API unchanged in shape, now DB-backed. `features/tracks` public API additionally exports `Track`, `getTracks`, `TrackFormDialog`, `TrackAdminList`.
 
@@ -905,11 +907,13 @@ git commit -m "feat: wire tracks feature to the database"
 ### Task 7: Leaderboards domain layer — types, schema, DAL
 
 **Files:**
+
 - Modify: `src/features/leaderboards/model/types.ts`
 - Create: `src/features/leaderboards/model/schema.ts`
 - Create: `src/features/leaderboards/model/leaderboards.ts`
 
 **Interfaces:**
+
 - Produces: `Leaderboard` type (`{ id: string; title: string; trackId: string; trackName: string }`); `leaderboardSchema` (Zod) and `LeaderboardInput` type; `getLeaderboards(): Promise<Leaderboard[]>`.
 
 - [ ] **Step 1: Replace `Leaderboard`/`PodiumEntry` types**
@@ -981,9 +985,11 @@ git commit -m "feat: add leaderboards domain types, schema, and DAL"
 ### Task 8: Leaderboards server actions
 
 **Files:**
+
 - Create: `src/features/leaderboards/model/actions.ts`
 
 **Interfaces:**
+
 - Consumes: `leaderboardSchema`, `LeaderboardInput` (Task 7); `getCurrentUser` (`@/shared/lib/session`); `prisma` (`@/shared/lib/prisma`).
 - Produces: `createLeaderboard(input: LeaderboardInput): Promise<LeaderboardActionResult>`, `updateLeaderboard(id: string, input: LeaderboardInput): Promise<LeaderboardActionResult>`, `deleteLeaderboard(id: string): Promise<{ rootError?: string } | void>`, where `LeaderboardActionResult = { fieldErrors?: Partial<Record<keyof LeaderboardInput, string>>; rootError?: string } | void`.
 
@@ -1120,12 +1126,14 @@ git commit -m "feat: add leaderboard server actions"
 ### Task 9: Leaderboards admin UI
 
 **Files:**
+
 - Create: `src/features/leaderboards/ui/admin/leaderboard-form-dialog.tsx`
 - Create: `src/features/leaderboards/ui/admin/delete-leaderboard-button.tsx`
 - Create: `src/features/leaderboards/ui/admin/leaderboard-admin-row.tsx`
 - Create: `src/features/leaderboards/ui/admin/leaderboard-admin-list.tsx`
 
 **Interfaces:**
+
 - Consumes: `createLeaderboard`, `updateLeaderboard`, `deleteLeaderboard` (Task 8); `leaderboardSchema`, `LeaderboardInput` (Task 7); `Leaderboard` (Task 7); `Button`, `Dialog` (`@/shared/ui`).
 - Produces: `type TrackOption = { id: string; name: string }`; `LeaderboardFormDialog(props: { mode: "create"; tracks: TrackOption[] } | { mode: "edit"; leaderboard: Leaderboard; tracks: TrackOption[] })`; `DeleteLeaderboardButton(props: { leaderboardId: string; leaderboardTitle: string })`; `LeaderboardAdminRow(props: { leaderboard: Leaderboard; tracks: TrackOption[] })`; `LeaderboardAdminList(props: { leaderboards: Leaderboard[]; tracks: TrackOption[] })`. `TrackOption` matches the plain `{ id, name }` shape the `views/admin-leaderboards` layer will derive from `features/tracks`' `Track` type in Task 11 — this is how the leaderboards feature learns about tracks without importing `features/tracks`.
 
@@ -1248,17 +1256,12 @@ export function LeaderboardFormDialog(props: LeaderboardFormDialogProps) {
               {...register("title")}
             />
             {errors.title && (
-              <p className="text-sm text-accent-600">
-                {errors.title.message}
-              </p>
+              <p className="text-sm text-accent-600">{errors.title.message}</p>
             )}
           </div>
 
           <div className="flex flex-col gap-1.5">
-            <label
-              htmlFor={`${uid}-trackId`}
-              className="text-sm font-semibold"
-            >
+            <label htmlFor={`${uid}-trackId`} className="text-sm font-semibold">
               Track
             </label>
             <select
@@ -1480,12 +1483,14 @@ git commit -m "feat: add leaderboard admin UI"
 ### Task 10: Leaderboards public UI — DB-backed, drop mock
 
 **Files:**
+
 - Modify: `src/features/leaderboards/ui/leaderboard-card.tsx`
 - Modify: `src/features/leaderboards/ui/leaderboards-section.tsx`
 - Delete: `src/features/leaderboards/model/mock.ts`
 - Modify: `src/features/leaderboards/index.ts`
 
 **Interfaces:**
+
 - Consumes: `getLeaderboards` (Task 7), `Leaderboard` (Task 7), `LeaderboardFormDialog`/`LeaderboardAdminList` (Task 9).
 - Produces: `LeaderboardsSection` (async Server Component, no props) — public API unchanged in shape, now DB-backed. `features/leaderboards` public API additionally exports `Leaderboard`, `getLeaderboards`, `LeaderboardFormDialog`, `LeaderboardAdminList`.
 
@@ -1498,11 +1503,7 @@ import { ArrowRight, MapPin } from "lucide-react";
 import { Button } from "@/shared/ui";
 import type { Leaderboard } from "../model/types";
 
-export function LeaderboardCard({
-  leaderboard,
-}: {
-  leaderboard: Leaderboard;
-}) {
+export function LeaderboardCard({ leaderboard }: { leaderboard: Leaderboard }) {
   return (
     <div className="flex flex-col gap-4 border border-divider bg-background p-6">
       <div className="flex flex-col gap-1">
@@ -1589,12 +1590,14 @@ git commit -m "feat: wire leaderboards feature to the database"
 ### Task 11: Admin views and routes
 
 **Files:**
+
 - Create: `src/views/admin/ui/admin-view.tsx`, `src/views/admin/index.ts`
 - Create: `src/views/admin-tracks/ui/admin-tracks-view.tsx`, `src/views/admin-tracks/index.ts`
 - Create: `src/views/admin-leaderboards/ui/admin-leaderboards-view.tsx`, `src/views/admin-leaderboards/index.ts`
 - Create: `src/app/admin/page.tsx`, `src/app/admin/tracks/page.tsx`, `src/app/admin/leaderboards/page.tsx`
 
 **Interfaces:**
+
 - Consumes: `requireAdmin` (`@/shared/lib/session`, Task 2); `getTracks`, `TrackFormDialog`, `TrackAdminList`, `Track` (`@/features/tracks`, Tasks 5–6); `getLeaderboards`, `LeaderboardFormDialog`, `LeaderboardAdminList` (`@/features/leaderboards`, Tasks 9–10).
 - Produces: `AdminView()`, `AdminTracksView()`, `AdminLeaderboardsView()` (all async or sync Server Components, no props) — this is where the `Track[]` → `TrackOption[]` mapping for the leaderboard form happens, keeping `features/leaderboards` free of any `features/tracks` import.
 
@@ -1659,9 +1662,7 @@ export async function AdminTracksView() {
   return (
     <main className="mx-auto flex w-full max-w-6xl flex-col gap-8 px-6 py-16 md:px-12">
       <div className="flex flex-wrap items-center justify-between gap-4">
-        <h1 className="font-heading text-2xl font-extrabold">
-          Manage tracks
-        </h1>
+        <h1 className="font-heading text-2xl font-extrabold">Manage tracks</h1>
         <TrackFormDialog mode="create" />
       </div>
       <TrackAdminList tracks={tracks} />
@@ -1774,11 +1775,13 @@ git commit -m "feat: add admin views and routes"
 ### Task 12: Public tracks/leaderboards views and routes
 
 **Files:**
+
 - Create: `src/views/tracks/ui/tracks-view.tsx`, `src/views/tracks/index.ts`
 - Create: `src/views/leaderboards/ui/leaderboards-view.tsx`, `src/views/leaderboards/index.ts`
 - Create: `src/app/tracks/page.tsx`, `src/app/leaderboards/page.tsx`
 
 **Interfaces:**
+
 - Consumes: `TracksSection` (`@/features/tracks`, Task 6); `LeaderboardsSection` (`@/features/leaderboards`, Task 10).
 - Produces: `TracksView()`, `LeaderboardsView()` (Server Components, no props).
 
@@ -1875,9 +1878,11 @@ git commit -m "feat: add public tracks and leaderboards pages"
 ### Task 13: Nav — Admin link
 
 **Files:**
+
 - Modify: `src/layout/site-nav/ui/site-nav.tsx`
 
 **Interfaces:**
+
 - Consumes: `user: AuthUser | null` from the existing `getCurrentUser()` call in this component (`user.role` is `"USER" | "ADMIN"`).
 
 - [ ] **Step 1: Add the desktop "Admin" link**
@@ -1941,9 +1946,11 @@ git commit -m "feat: show Admin nav link for admin users"
 ### Task 14: Playwright E2E suite — tracks
 
 **Files:**
+
 - Create: `tests/admin-tracks.spec.ts`
 
 **Interfaces:**
+
 - Consumes: running app (`pnpm dev` via `playwright.config.ts`'s `webServer`), `TEST_DATABASE_URL`, `/login`, `/signup`, `/admin/tracks`, `/tracks` routes, and every label/button text defined in Tasks 5–6, 11–13 (`Add track`, `Edit`, `Delete`, `Save`, `Name`, `Country`, `Length (meters)`, `Corners`, `Elevation (meters)`).
 
 - [ ] **Step 1: Write the suite**
@@ -2090,9 +2097,7 @@ test("submitting the add track form without required fields shows a field error 
   expect(trackCount).toBe(0);
 });
 
-test("a regular user cannot reach the admin tracks page", async ({
-  page,
-}) => {
+test("a regular user cannot reach the admin tracks page", async ({ page }) => {
   await signUp(page, "user1@example.com");
   const response = await page.goto("/admin/tracks");
   expect(response?.status()).toBe(404);
@@ -2140,9 +2145,11 @@ git commit -m "test: add Playwright E2E suite for track admin CRUD"
 ### Task 15: Playwright E2E suite — leaderboards
 
 **Files:**
+
 - Create: `tests/admin-leaderboards.spec.ts`
 
 **Interfaces:**
+
 - Consumes: running app, `TEST_DATABASE_URL`, `/login`, `/signup`, `/admin/leaderboards`, `/leaderboards` routes, and every label/button text defined in Tasks 9–10, 11–13 (`Add leaderboard`, `Edit`, `Delete`, `Save`, `Title`, `Track`).
 
 - [ ] **Step 1: Write the suite**
@@ -2217,7 +2224,9 @@ test("an admin adding a leaderboard shows it in the admin list and the public le
   await page.getByRole("button", { name: "Add leaderboard" }).click();
   const dialog = page.getByRole("dialog");
   await dialog.getByLabel("Title").fill("Fastest overall");
-  await dialog.getByLabel("Track").selectOption({ label: "Circuit de la Sarthe" });
+  await dialog
+    .getByLabel("Track")
+    .selectOption({ label: "Circuit de la Sarthe" });
   await dialog.getByRole("button", { name: "Add leaderboard" }).click();
 
   await expect(page.getByText("Fastest overall")).toBeVisible();
@@ -2244,7 +2253,9 @@ test("an admin editing a leaderboard updates the list", async ({ page }) => {
   await page.getByRole("button", { name: "Add leaderboard" }).click();
   const dialog = page.getByRole("dialog");
   await dialog.getByLabel("Title").fill("Fastest overall");
-  await dialog.getByLabel("Track").selectOption({ label: "Circuit de la Sarthe" });
+  await dialog
+    .getByLabel("Track")
+    .selectOption({ label: "Circuit de la Sarthe" });
   await dialog.getByRole("button", { name: "Add leaderboard" }).click();
   await expect(page.getByText("Fastest overall")).toBeVisible();
 
@@ -2275,7 +2286,9 @@ test("an admin deleting a leaderboard requires confirmation and removes it every
   await page.getByRole("button", { name: "Add leaderboard" }).click();
   const dialog = page.getByRole("dialog");
   await dialog.getByLabel("Title").fill("Fastest overall");
-  await dialog.getByLabel("Track").selectOption({ label: "Circuit de la Sarthe" });
+  await dialog
+    .getByLabel("Track")
+    .selectOption({ label: "Circuit de la Sarthe" });
   await dialog.getByRole("button", { name: "Add leaderboard" }).click();
   await expect(page.getByText("Fastest overall")).toBeVisible();
 

@@ -65,7 +65,9 @@ test("an admin adding a leaderboard shows it in the admin list and the public le
   await page.getByRole("button", { name: "Add leaderboard" }).click();
   const dialog = page.getByRole("dialog");
   await dialog.getByLabel("Title").fill("Fastest overall");
-  await dialog.getByLabel("Track").selectOption({ label: "Circuit de la Sarthe" });
+  await dialog
+    .getByLabel("Track")
+    .selectOption({ label: "Circuit de la Sarthe" });
   await dialog.getByRole("button", { name: "Add leaderboard" }).click();
 
   await expect(page.getByText("Fastest overall")).toBeVisible();
@@ -92,7 +94,9 @@ test("an admin editing a leaderboard updates the list", async ({ page }) => {
   await page.getByRole("button", { name: "Add leaderboard" }).click();
   const dialog = page.getByRole("dialog");
   await dialog.getByLabel("Title").fill("Fastest overall");
-  await dialog.getByLabel("Track").selectOption({ label: "Circuit de la Sarthe" });
+  await dialog
+    .getByLabel("Track")
+    .selectOption({ label: "Circuit de la Sarthe" });
   await dialog.getByRole("button", { name: "Add leaderboard" }).click();
   await expect(page.getByText("Fastest overall")).toBeVisible();
 
@@ -123,7 +127,9 @@ test("an admin deleting a leaderboard requires confirmation and removes it every
   await page.getByRole("button", { name: "Add leaderboard" }).click();
   const dialog = page.getByRole("dialog");
   await dialog.getByLabel("Title").fill("Fastest overall");
-  await dialog.getByLabel("Track").selectOption({ label: "Circuit de la Sarthe" });
+  await dialog
+    .getByLabel("Track")
+    .selectOption({ label: "Circuit de la Sarthe" });
   await dialog.getByRole("button", { name: "Add leaderboard" }).click();
   await expect(page.getByText("Fastest overall")).toBeVisible();
 

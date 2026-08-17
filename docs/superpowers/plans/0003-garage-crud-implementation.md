@@ -27,6 +27,7 @@
 ## File Structure
 
 **New:**
+
 - `shared/lib/session.ts` — `getCurrentUser`, `AuthUser`, `Role` (moved from `features/auth/model/session.ts`).
 - `shared/ui/dialog/dialog.tsx` — native-`<dialog>`-backed modal primitive.
 - `features/garage/model/schema.ts` — `carSchema` (Zod).
@@ -39,6 +40,7 @@
 - `tests/garage.spec.ts` — Playwright E2E suite.
 
 **Modified:**
+
 - `prisma/schema.prisma` — add `Drivetrain`/`Transmission` enums, `Car` model, `User.cars` relation.
 - `features/auth/model/session.ts` — keeps `createSession`/`deleteSession`; re-exports `getCurrentUser` from `shared/lib/session`.
 - `features/auth/model/types.ts` — re-exports `AuthUser`/`Role` from `shared/lib/session`.
@@ -54,9 +56,11 @@
 ### Task 1: Prisma schema — `Car` model
 
 **Files:**
+
 - Modify: `prisma/schema.prisma`
 
 **Interfaces:**
+
 - Produces: `Car` Prisma model with fields `id, make, model, year, horsepower, drivetrain (Drivetrain), transmission (Transmission), nickname, photoUrl, notes, ownerId, owner (User), createdAt`; `Drivetrain` enum (`FWD`, `RWD`, `AWD`); `Transmission` enum (`MANUAL`, `AUTOMATIC`); `User.cars: Car[]`.
 
 - [ ] **Step 1: Add the enums and model to `prisma/schema.prisma`**
@@ -115,10 +119,12 @@ Expected: `Your database is now in sync with your schema.` and a new folder unde
 - [ ] **Step 3: Apply the same migration to the test database**
 
 Run:
+
 ```bash
 set -a; source .env; set +a
 DATABASE_URL="$TEST_DATABASE_URL" npx prisma migrate deploy
 ```
+
 Expected: `All migrations have been successfully applied.`
 
 - [ ] **Step 4: Verify the Prisma client compiles against the new schema**
@@ -138,12 +144,14 @@ git commit -m "feat: add Car model to schema"
 ### Task 2: Move `getCurrentUser` into `shared/lib/session`
 
 **Files:**
+
 - Create: `src/shared/lib/session.ts`
 - Modify: `src/features/auth/model/session.ts`
 - Modify: `src/features/auth/model/types.ts`
 - Test: `tests/auth.spec.ts` (run only, no edits — regression check)
 
 **Interfaces:**
+
 - Produces: `getCurrentUser(): Promise<AuthUser | null>`, `type AuthUser = { id: string; name: string; email: string; role: Role }`, `type Role = "USER" | "ADMIN"` — all from `@/shared/lib/session`. `features/auth`'s public API (`getCurrentUser`, `AuthUser`, `Role` via `features/auth/index.ts`) is unchanged for existing consumers.
 
 - [ ] **Step 1: Create `src/shared/lib/session.ts`**
@@ -268,12 +276,14 @@ git commit -m "refactor: move getCurrentUser into shared/lib/session"
 ### Task 3: Garage domain layer — types, schema, DAL
 
 **Files:**
+
 - Modify: `src/features/garage/model/types.ts`
 - Modify: `src/features/garage/model/mock.ts`
 - Create: `src/features/garage/model/schema.ts`
 - Create: `src/features/garage/model/cars.ts`
 
 **Interfaces:**
+
 - Consumes: `prisma` from `@/shared/lib/prisma`.
 - Produces: `type Car`, `type Drivetrain`, `type Transmission` from `./types`; `carSchema`, `type CarInput` from `./schema`; `getCars(ownerId: string): Promise<Car[]>`, `getCarCount(ownerId: string): Promise<number>` from `./cars`.
 
@@ -378,9 +388,11 @@ git commit -m "feat: add garage domain types, schema, and DAL"
 ### Task 4: Garage server actions
 
 **Files:**
+
 - Create: `src/features/garage/model/actions.ts`
 
 **Interfaces:**
+
 - Consumes: `getCurrentUser` from `@/shared/lib/session`; `prisma` from `@/shared/lib/prisma`; `carSchema`, `CarInput` from `./schema`.
 - Produces: `type CarActionResult = { fieldErrors?: Partial<Record<keyof CarInput, string>>; rootError?: string } | void`; `createCar(input: CarInput): Promise<CarActionResult>`; `updateCar(id: string, input: CarInput): Promise<CarActionResult>`; `deleteCar(id: string): Promise<{ rootError?: string } | void>`.
 
@@ -498,10 +510,12 @@ git commit -m "feat: add garage server actions"
 ### Task 5: `Dialog` primitive
 
 **Files:**
+
 - Create: `src/shared/ui/dialog/dialog.tsx`
 - Modify: `src/shared/ui/index.ts`
 
 **Interfaces:**
+
 - Produces: `Dialog({ open, onOpenChange, children }: { open: boolean; onOpenChange: (open: boolean) => void; children: ReactNode })`, exported from `@/shared/ui`.
 
 - [ ] **Step 1: Create `src/shared/ui/dialog/dialog.tsx`**
@@ -576,9 +590,11 @@ git commit -m "feat: add shared Dialog primitive"
 ### Task 6: Add/edit car form dialog
 
 **Files:**
+
 - Create: `src/features/garage/ui/car-form-dialog.tsx`
 
 **Interfaces:**
+
 - Consumes: `Button`, `Dialog` from `@/shared/ui`; `createCar`, `updateCar` from `../model/actions`; `carSchema`, `CarInput` from `../model/schema`; `Car` from `../model/types`.
 - Produces: `CarFormDialog(props: { mode: "create" } | { mode: "edit"; car: Car })`.
 
@@ -713,15 +729,9 @@ export function CarFormDialog(props: CarFormDialogProps) {
             <label htmlFor="model" className="text-sm font-semibold">
               Model
             </label>
-            <input
-              id="model"
-              className={inputClasses}
-              {...register("model")}
-            />
+            <input id="model" className={inputClasses} {...register("model")} />
             {errors.model && (
-              <p className="text-sm text-accent-600">
-                {errors.model.message}
-              </p>
+              <p className="text-sm text-accent-600">{errors.model.message}</p>
             )}
           </div>
 
@@ -865,9 +875,11 @@ git commit -m "feat: add car add/edit form dialog"
 ### Task 7: Delete car button
 
 **Files:**
+
 - Create: `src/features/garage/ui/delete-car-button.tsx`
 
 **Interfaces:**
+
 - Consumes: `Button`, `Dialog` from `@/shared/ui`; `deleteCar` from `../model/actions`.
 - Produces: `DeleteCarButton({ carId, carLabel }: { carId: string; carLabel: string })`.
 
@@ -965,10 +977,12 @@ git commit -m "feat: add delete car button with confirmation"
 ### Task 8: Car card and list
 
 **Files:**
+
 - Create: `src/features/garage/ui/car-card.tsx`
 - Create: `src/features/garage/ui/car-list.tsx`
 
 **Interfaces:**
+
 - Consumes: `Tag` from `@/shared/ui`; `CarFormDialog` from `./car-form-dialog`; `DeleteCarButton` from `./delete-car-button`; `Car` from `../model/types`.
 - Produces: `CarCard({ car }: { car: Car })`; `CarList({ cars }: { cars: Car[] })`.
 
@@ -1019,9 +1033,7 @@ export function CarCard({ car }: { car: Car }) {
       </div>
 
       <div className="flex flex-col gap-0.5">
-        <span className="font-heading text-lg font-extrabold">
-          {heading}
-        </span>
+        <span className="font-heading text-lg font-extrabold">{heading}</span>
         {subheading && (
           <span className="text-sm text-foreground/60">{subheading}</span>
         )}
@@ -1086,12 +1098,14 @@ git commit -m "feat: add car card and list"
 ### Task 9: Wire it all up
 
 **Files:**
+
 - Modify: `src/features/garage/ui/garage-bar.tsx`
 - Modify: `src/features/garage/index.ts`
 - Modify: `src/views/home/ui/home-view.tsx`
 - Modify: `src/views/my-garage/ui/my-garage-view.tsx`
 
 **Interfaces:**
+
 - Consumes: `getCarCount` from `../model/cars` (in `garage-bar.tsx`); `getCars`, `CarList`, `CarFormDialog` from `@/features/garage` (in `my-garage-view.tsx`).
 - Produces: `features/garage` public API gains `CarList`, `CarFormDialog`, `getCars`, `type Car`.
 
@@ -1146,7 +1160,9 @@ export type { Car } from "./model/types";
 Change the `GarageBar` line:
 
 ```tsx
-{user && <GarageBar userId={user.id} />}
+{
+  user && <GarageBar userId={user.id} />;
+}
 ```
 
 - [ ] **Step 4: Update `src/views/my-garage/ui/my-garage-view.tsx`**
@@ -1198,9 +1214,11 @@ git commit -m "feat: wire garage CRUD into my-garage and the homepage"
 ### Task 10: Playwright E2E suite
 
 **Files:**
+
 - Create: `tests/garage.spec.ts`
 
 **Interfaces:**
+
 - Consumes: the full CRUD flow through the UI (no new exported interfaces).
 
 - [ ] **Step 1: Create `tests/garage.spec.ts`**
@@ -1287,11 +1305,17 @@ test("deleting a car requires confirmation", async ({ page }) => {
   await expect(page.getByText("2023 Toyota Supra")).toBeVisible();
 
   await page.getByRole("button", { name: "Delete" }).click();
-  await page.getByRole("dialog").getByRole("button", { name: "Cancel" }).click();
+  await page
+    .getByRole("dialog")
+    .getByRole("button", { name: "Cancel" })
+    .click();
   await expect(page.getByText("2023 Toyota Supra")).toBeVisible();
 
   await page.getByRole("button", { name: "Delete" }).click();
-  await page.getByRole("dialog").getByRole("button", { name: "Delete" }).click();
+  await page
+    .getByRole("dialog")
+    .getByRole("button", { name: "Delete" })
+    .click();
   await expect(page.getByText("2023 Toyota Supra")).toHaveCount(0);
 });
 
@@ -1302,7 +1326,10 @@ test("submitting the add form without required fields shows a field error and cr
   await page.goto("/my-garage");
 
   await page.getByRole("button", { name: "Add car" }).click();
-  await page.getByRole("dialog").getByRole("button", { name: "Add car" }).click();
+  await page
+    .getByRole("dialog")
+    .getByRole("button", { name: "Add car" })
+    .click();
 
   await expect(page.getByText("Make is required")).toBeVisible();
 

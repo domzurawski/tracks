@@ -63,7 +63,7 @@ needed three times here instead of once).
 - `ui/admin/track-admin-list.tsx`, `ui/admin/track-admin-row.tsx` (new,
   Server Components) — admin list with edit/delete controls.
 - `ui/admin/delete-track-button.tsx` (new, `"use client"`) — delete trigger
-  + confirmation dialog.
+  - confirmation dialog.
 - `model/mock.ts` — deleted.
 - `index.ts` — public API grows to include `Track`, the actions, `getTracks`,
   `TrackFormDialog`, `TrackAdminList`, `TracksSection` (already exported).
@@ -159,21 +159,21 @@ Required on `Track`: all fields (`name`, `country`, `length`, `corners`,
   `{ rootError: "Not authorized" }` (the page itself is guarded by
   `requireAdmin()`, but the action must not trust the client regardless —
   same reasoning as the garage actions). `prisma.track.create({ data:
-  input })`. `revalidatePath("/")`, `/tracks`, `/admin/tracks`.
+input })`. `revalidatePath("/")`, `/tracks`, `/admin/tracks`.
 - **`updateTrack(id, input)`** — re-validate, re-check admin,
   `prisma.track.update({ where: { id }, data: input })`. Also revalidates
   `/leaderboards` and `/admin/leaderboards`, since a track's name is
   displayed on leaderboard cards. `P2025` (not found) maps to
   `{ rootError: "Track not found" }`.
 - **`deleteTrack(id)`** — re-check admin, `prisma.track.delete({ where: {
-  id } })`. Revalidates all five paths (cascade removes its leaderboards
+id } })`. Revalidates all five paths (cascade removes its leaderboards
   too). `P2025` maps to `{ rootError: "Track not found" }`.
 - **`createLeaderboard(input: LeaderboardInput)`** — re-validate, re-check
   admin, `prisma.leaderboard.create({ data: input })`. `revalidatePath("/")`,
   `/leaderboards`, `/admin/leaderboards`.
 - **`updateLeaderboard(id, input)`** / **`deleteLeaderboard(id)`** — same
   pattern as tracks, same three paths, `P2025` → `{ rootError: "Leaderboard
-  not found" }`.
+not found" }`.
 - Return shape mirrors garage:
   `{ fieldErrors?: {...}; rootError?: string } | void` for create/update;
   delete returns `{ rootError?: string } | void`.
@@ -184,8 +184,8 @@ Required on `Track`: all fields (`name`, `country`, `length`, `corners`,
 ## UI, routes, and forms
 
 - **`requireAdmin()`** (`shared/lib/session.ts`) — `const user =
-  await getCurrentUser(); if (!user || user.role !== "ADMIN") notFound();
-  return user;`. A logged-out or non-admin visitor to any `/admin*` route
+await getCurrentUser(); if (!user || user.role !== "ADMIN") notFound();
+return user;`. A logged-out or non-admin visitor to any `/admin*` route
   gets Next's standard 404 page — the route appears not to exist, no
   "access denied" page revealing otherwise.
 - **`TrackFormDialog`** (`"use client"`) — `mode: "create" | "edit"` (+
@@ -203,7 +203,7 @@ Required on `Track`: all fields (`name`, `country`, `length`, `corners`,
 - **`LeaderboardAdminList`** / **`LeaderboardAdminRow`**,
   **`DeleteLeaderboardButton`** — same shape as the track equivalents.
 - **`TrackCard`** — length formatted as `` `${(length / 1000).toFixed(1)}
-  km` ``, elevation as `` `${elevation}m` `` — visual output unchanged from
+km` ``, elevation as `` `${elevation}m` `` — visual output unchanged from
   today.
 - **`LeaderboardCard`** — drops the podium block (no data for it); keeps
   the track-name eyebrow and title.
