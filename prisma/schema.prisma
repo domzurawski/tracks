@@ -24,14 +24,15 @@ enum Transmission {
 }
 
 model User {
-  id           String    @id @default(cuid())
-  email        String    @unique
+  id           String             @id @default(cuid())
+  email        String             @unique
   passwordHash String
   name         String
-  role         Role      @default(USER)
-  createdAt    DateTime  @default(now())
+  role         Role               @default(USER)
+  createdAt    DateTime           @default(now())
   sessions     Session[]
   cars         Car[]
+  entries      LeaderboardEntry[]
 }
 
 model Session {
@@ -44,7 +45,7 @@ model Session {
 }
 
 model Car {
-  id           String       @id @default(cuid())
+  id           String             @id @default(cuid())
   make         String
   model        String
   year         Int
@@ -55,8 +56,9 @@ model Car {
   photoUrl     String?
   notes        String?
   ownerId      String
-  owner        User         @relation(fields: [ownerId], references: [id], onDelete: Cascade)
-  createdAt    DateTime     @default(now())
+  owner        User               @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  createdAt    DateTime           @default(now())
+  entries      LeaderboardEntry[]
 }
 
 model Track {
@@ -71,11 +73,34 @@ model Track {
 }
 
 model Leaderboard {
-  id        String   @id @default(cuid())
+  id        String             @id @default(cuid())
   title     String
   trackId   String
-  track     Track    @relation(fields: [trackId], references: [id], onDelete: Cascade)
-  createdAt DateTime @default(now())
+  track     Track              @relation(fields: [trackId], references: [id], onDelete: Cascade)
+  createdAt DateTime           @default(now())
+  entries   LeaderboardEntry[]
 
   @@unique([trackId, title])
+}
+
+model LeaderboardEntry {
+  id              String       @id @default(cuid())
+  leaderboardId   String
+  leaderboard     Leaderboard  @relation(fields: [leaderboardId], references: [id], onDelete: Cascade)
+  driverId        String
+  driver          User         @relation(fields: [driverId], references: [id], onDelete: Cascade)
+  carId           String?
+  car             Car?         @relation(fields: [carId], references: [id], onDelete: SetNull)
+  timeMs          Int
+  carMake         String
+  carModel        String
+  carYear         Int
+  carHorsepower   Int
+  carDrivetrain   Drivetrain
+  carTransmission Transmission
+  carNickname     String?
+  carNotes        String?
+  createdAt       DateTime     @default(now())
+
+  @@unique([leaderboardId, carId])
 }
