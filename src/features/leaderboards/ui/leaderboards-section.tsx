@@ -1,7 +1,9 @@
-import { mockLeaderboards } from "../model/mock";
+import { getLeaderboards } from "../model/leaderboards";
 import { LeaderboardCard } from "./leaderboard-card";
 
-export function LeaderboardsSection() {
+export async function LeaderboardsSection() {
+  const leaderboards = await getLeaderboards();
+
   return (
     <section className="flex flex-col gap-7 py-14">
       <div className="flex items-baseline justify-between border-b-2 border-divider pb-4">
@@ -9,15 +11,12 @@ export function LeaderboardsSection() {
           Hottest Leaderboards
         </h2>
         <span className="text-sm text-foreground/60">
-          {mockLeaderboards.length} active
+          {leaderboards.length} active
         </span>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2">
-        {mockLeaderboards.map((leaderboard) => (
-          <LeaderboardCard
-            key={`${leaderboard.title}-${leaderboard.trackName}`}
-            leaderboard={leaderboard}
-          />
+        {leaderboards.map((leaderboard) => (
+          <LeaderboardCard key={leaderboard.id} leaderboard={leaderboard} />
         ))}
       </div>
     </section>
