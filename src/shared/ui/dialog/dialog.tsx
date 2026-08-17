@@ -36,7 +36,7 @@ export function Dialog({ open, onOpenChange, children }: DialogProps) {
       ref={dialogRef}
       className="border border-divider bg-background p-6 backdrop:bg-foreground/40"
     >
-      {children}
+      {open && children}
     </dialog>
   );
 }
