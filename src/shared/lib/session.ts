@@ -1,6 +1,7 @@
 import "server-only";
 import crypto from "node:crypto";
 import { cookies } from "next/headers";
+import { notFound } from "next/navigation";
 import { cache } from "react";
 import { prisma } from "@/shared/lib/prisma";
 
@@ -38,3 +39,11 @@ export const getCurrentUser = cache(async (): Promise<AuthUser | null> => {
     role: session.user.role as Role,
   };
 });
+
+export async function requireAdmin(): Promise<AuthUser> {
+  const user = await getCurrentUser();
+  if (!user || user.role !== "ADMIN") {
+    notFound();
+  }
+  return user;
+}
