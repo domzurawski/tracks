@@ -1,4 +1,5 @@
 import "server-only";
+import { cache } from "react";
 import { prisma } from "@/shared/lib/prisma";
 import type { Leaderboard } from "./types";
 
@@ -16,20 +17,20 @@ export async function getLeaderboards(): Promise<Leaderboard[]> {
   }));
 }
 
-export async function getLeaderboard(
-  id: string,
-): Promise<Leaderboard | null> {
-  const leaderboard = await prisma.leaderboard.findUnique({
-    where: { id },
-    include: { track: { select: { name: true } } },
-  });
+export const getLeaderboard = cache(
+  async (id: string): Promise<Leaderboard | null> => {
+    const leaderboard = await prisma.leaderboard.findUnique({
+      where: { id },
+      include: { track: { select: { name: true } } },
+    });
 
-  if (!leaderboard) return null;
+    if (!leaderboard) return null;
 
-  return {
-    id: leaderboard.id,
-    title: leaderboard.title,
-    trackId: leaderboard.trackId,
-    trackName: leaderboard.track.name,
-  };
-}
+    return {
+      id: leaderboard.id,
+      title: leaderboard.title,
+      trackId: leaderboard.trackId,
+      trackName: leaderboard.track.name,
+    };
+  },
+);

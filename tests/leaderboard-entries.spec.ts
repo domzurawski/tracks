@@ -120,6 +120,50 @@ test("a user cannot set two times with the same car on the same leaderboard", as
   expect(entryCount).toBe(1);
 });
 
+test("submitting the set-time dialog after a race creates a duplicate entry for the same car is rejected server-side", async ({
+  page,
+}) => {
+  const leaderboard = await seedLeaderboard();
+  const email = "driver7@example.com";
+  await signUp(page, email);
+  await addCar(page);
+
+  await page.goto(`/leaderboards/${leaderboard.id}`);
+  await page.getByRole("button", { name: "Set a time" }).click();
+  const dialog = page.getByRole("dialog");
+  await dialog.getByLabel("Minutes").fill("2");
+  await dialog.getByLabel("Seconds").fill("18");
+  await dialog.getByLabel("Millis").fill("760");
+
+  const user = await prisma.user.findUniqueOrThrow({ where: { email } });
+  const car = await prisma.car.findFirstOrThrow({
+    where: { ownerId: user.id },
+  });
+  await prisma.leaderboardEntry.create({
+    data: {
+      leaderboardId: leaderboard.id,
+      driverId: user.id,
+      carId: car.id,
+      timeMs: 999000,
+      carMake: car.make,
+      carModel: car.model,
+      carYear: car.year,
+      carHorsepower: car.horsepower,
+      carDrivetrain: car.drivetrain,
+      carTransmission: car.transmission,
+      carNickname: car.nickname,
+      carNotes: car.notes,
+    },
+  });
+
+  await dialog.getByRole("button", { name: "Set time" }).click();
+
+  await expect(
+    dialog.getByText("This car already has a time on this leaderboard"),
+  ).toBeVisible();
+  await expect(dialog).toBeVisible();
+});
+
 test("a user sets times with two different cars and both are ranked correctly", async ({
   page,
 }) => {
@@ -275,6 +319,11 @@ test("a logged-out visitor sees full entry details and no set-time control", asy
   await expect(page.getByRole("button", { name: "Set a time" })).toHaveCount(0);
   await expect(
     page.getByRole("link", { name: "Log in to set a time" }),
+  ).toBeVisible();
+
+  await page.getByRole("button", { name: "Notes" }).click();
+  await expect(
+    page.getByRole("dialog").getByText("Track-prepped"),
   ).toBeVisible();
 });
 

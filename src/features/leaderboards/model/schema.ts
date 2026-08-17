@@ -11,18 +11,18 @@ export const entrySchema = z
   .object({
     carId: z.string().trim().min(1, "Select a car"),
     minutes: z.coerce
-      .number()
-      .int()
+      .number("Enter a valid time")
+      .int("Enter a whole number")
       .min(0, "Enter a valid time")
       .max(999, "Enter a valid time"),
     seconds: z.coerce
-      .number()
-      .int()
+      .number("Enter a valid time")
+      .int("Enter a whole number")
       .min(0, "Enter a valid time")
       .max(59, "Enter a valid time"),
     milliseconds: z.coerce
-      .number()
-      .int()
+      .number("Enter a valid time")
+      .int("Enter a whole number")
       .min(0, "Enter a valid time")
       .max(999, "Enter a valid time"),
   })

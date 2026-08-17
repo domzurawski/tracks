@@ -22,10 +22,10 @@ export async function generateMetadata({
   };
 }
 
-export default async function LeaderboardPage({
-  params,
-}: LeaderboardPageProps) {
-  const { id } = await params;
+export default async function LeaderboardPage(
+  props: PageProps<"/leaderboards/[id]">,
+) {
+  const { id } = await props.params;
   const user = await getCurrentUser();
 
   return <LeaderboardDetailView leaderboardId={id} user={user} />;

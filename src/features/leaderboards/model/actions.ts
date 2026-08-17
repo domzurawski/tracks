@@ -196,6 +196,17 @@ export async function deleteEntry(
     return { rootError: "Not authorized" };
   }
 
-  await prisma.leaderboardEntry.delete({ where: { id } });
+  try {
+    await prisma.leaderboardEntry.delete({ where: { id } });
+  } catch (error) {
+    if (
+      error instanceof Prisma.PrismaClientKnownRequestError &&
+      error.code === "P2025"
+    ) {
+      return { rootError: "Entry not found" };
+    }
+    throw error;
+  }
+
   revalidateEntryPaths(entry.leaderboardId);
 }
