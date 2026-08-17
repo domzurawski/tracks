@@ -23,7 +23,9 @@ function revalidateLeaderboardPaths() {
   revalidatePath("/admin/leaderboards");
 }
 
-export async function createTrack(input: TrackInput): Promise<TrackActionResult> {
+export async function createTrack(
+  input: TrackInput,
+): Promise<TrackActionResult> {
   const parsed = trackSchema.safeParse(input);
   if (!parsed.success) {
     return { rootError: "Invalid input" };

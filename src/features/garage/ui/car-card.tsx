@@ -42,9 +42,7 @@ export function CarCard({ car }: { car: Car }) {
       </div>
 
       <div className="flex flex-col gap-0.5">
-        <span className="font-heading text-lg font-extrabold">
-          {heading}
-        </span>
+        <span className="font-heading text-lg font-extrabold">{heading}</span>
         {subheading && (
           <span className="text-sm text-foreground/60">{subheading}</span>
         )}

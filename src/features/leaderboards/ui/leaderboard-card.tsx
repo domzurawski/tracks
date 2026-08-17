@@ -2,11 +2,7 @@ import { ArrowRight, MapPin } from "lucide-react";
 import { Button } from "@/shared/ui";
 import type { Leaderboard } from "../model/types";
 
-export function LeaderboardCard({
-  leaderboard,
-}: {
-  leaderboard: Leaderboard;
-}) {
+export function LeaderboardCard({ leaderboard }: { leaderboard: Leaderboard }) {
   return (
     <div className="flex flex-col gap-4 border border-divider bg-background p-6">
       <div className="flex flex-col gap-1">

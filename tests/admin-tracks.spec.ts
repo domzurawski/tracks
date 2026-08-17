@@ -137,9 +137,7 @@ test("submitting the add track form without required fields shows a field error 
   expect(trackCount).toBe(0);
 });
 
-test("a regular user cannot reach the admin tracks page", async ({
-  page,
-}) => {
+test("a regular user cannot reach the admin tracks page", async ({ page }) => {
   await signUp(page, "user1@example.com");
   const response = await page.goto("/admin/tracks");
   expect(response?.status()).toBe(404);

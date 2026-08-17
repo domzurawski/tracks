@@ -10,9 +10,7 @@ import { trackSchema } from "../../model/schema";
 import type { TrackInput } from "../../model/schema";
 import type { Track } from "../../model/types";
 
-type TrackFormDialogProps =
-  | { mode: "create" }
-  | { mode: "edit"; track: Track };
+type TrackFormDialogProps = { mode: "create" } | { mode: "edit"; track: Track };
 
 const inputClasses =
   "border border-divider bg-background px-3 py-2 text-sm outline-none focus-visible:outline-2 focus-visible:outline-accent-500 focus-visible:outline-offset-2";
@@ -118,10 +116,7 @@ export function TrackFormDialog(props: TrackFormDialogProps) {
           </div>
 
           <div className="flex flex-col gap-1.5">
-            <label
-              htmlFor={`${uid}-country`}
-              className="text-sm font-semibold"
-            >
+            <label htmlFor={`${uid}-country`} className="text-sm font-semibold">
               Country
             </label>
             <input
@@ -137,10 +132,7 @@ export function TrackFormDialog(props: TrackFormDialogProps) {
           </div>
 
           <div className="flex flex-col gap-1.5">
-            <label
-              htmlFor={`${uid}-length`}
-              className="text-sm font-semibold"
-            >
+            <label htmlFor={`${uid}-length`} className="text-sm font-semibold">
               Length (meters)
             </label>
             <input
@@ -150,17 +142,12 @@ export function TrackFormDialog(props: TrackFormDialogProps) {
               {...register("length", { valueAsNumber: true })}
             />
             {errors.length && (
-              <p className="text-sm text-accent-600">
-                {errors.length.message}
-              </p>
+              <p className="text-sm text-accent-600">{errors.length.message}</p>
             )}
           </div>
 
           <div className="flex flex-col gap-1.5">
-            <label
-              htmlFor={`${uid}-corners`}
-              className="text-sm font-semibold"
-            >
+            <label htmlFor={`${uid}-corners`} className="text-sm font-semibold">
               Corners
             </label>
             <input

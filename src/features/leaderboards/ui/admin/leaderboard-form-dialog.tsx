@@ -112,17 +112,12 @@ export function LeaderboardFormDialog(props: LeaderboardFormDialogProps) {
               {...register("title")}
             />
             {errors.title && (
-              <p className="text-sm text-accent-600">
-                {errors.title.message}
-              </p>
+              <p className="text-sm text-accent-600">{errors.title.message}</p>
             )}
           </div>
 
           <div className="flex flex-col gap-1.5">
-            <label
-              htmlFor={`${uid}-trackId`}
-              className="text-sm font-semibold"
-            >
+            <label htmlFor={`${uid}-trackId`} className="text-sm font-semibold">
               Track
             </label>
             <select
